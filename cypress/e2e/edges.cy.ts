@@ -88,7 +88,7 @@ describe('Edges Panel', () => {
 
     // Verify sorting
     cy.get('[data-testid="player-name"]').then(($names) => {
-      const names = Array.from($names).map(el => el.textContent);
+      const names = (Array.from($names as any) as HTMLElement[]).map((el) => el.textContent);
       const sorted = [...names].sort();
       expect(names).to.deep.equal(sorted);
     });
@@ -96,7 +96,7 @@ describe('Edges Panel', () => {
     // Toggle sort order
     cy.contains('button', '↓').click();
     cy.get('[data-testid="player-name"]').then(($names) => {
-      const names = Array.from($names).map(el => el.textContent);
+      const names = (Array.from($names as any) as HTMLElement[]).map((el) => el.textContent);
       const sorted = [...names].sort().reverse();
       expect(names).to.deep.equal(sorted);
     });

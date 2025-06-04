@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Constants
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://momentum-ignition-backend.onrender.com';
 
 // Types
 interface User {
@@ -15,9 +15,15 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
   login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  resetPassword?: (token: string, newPassword: string) => Promise<void>;
+  validateResetToken?: (token: string) => Promise<boolean>;
+  requestPasswordReset?: (email: string) => Promise<void>;
+  signup?: (username: string, email: string, password: string) => Promise<User>;
 }
 
 // Create context
@@ -26,6 +32,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Computed property for authentication status
+  const isAuthenticated = user !== null;
 
   // Helper function to get auth header
   const getAuthHeader = () => {
@@ -39,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login function
   const login = async (username: string, password: string) => {
     try {
+      setIsLoading(true);
       // Get token
       const tokenResponse = await fetch(`${API_BASE_URL}/api/auth/token`, {
         method: 'POST',
@@ -77,12 +88,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Check auth function
   const checkAuth = async () => {
     try {
+      setIsLoading(true);
       const token = localStorage.getItem('token');
       if (!token) {
         setUser(null);
@@ -106,6 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
       setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -121,7 +137,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      isLoading, 
+      login, 
+      logout, 
+      checkAuth 
+    }}>
       {children}
     </AuthContext.Provider>
   );

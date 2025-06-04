@@ -71,7 +71,7 @@ interface PlayerMomentumModuleProps {
   currentStats: CurrentStats | null;
   propLines: PropLines | null;
   isLoading: boolean;
-  error: any;
+  error: string | null;
 }
 
 function PlayerMomentumModule({

@@ -15,7 +15,6 @@ export function ResetPasswordForm({ onModeChange }: ResetPasswordFormProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isValidating, setIsValidating] = useState(true);
   const [isValid, setIsValid] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const { resetPassword, validateResetToken } = useAuth();
@@ -26,33 +25,24 @@ export function ResetPasswordForm({ onModeChange }: ResetPasswordFormProps) {
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
-        setIsValidating(false);
+        setError('No reset token provided');
         return;
       }
 
       try {
-        const valid = await validateResetToken(token);
-        setIsValid(valid);
-      } catch (err) {
+        if (validateResetToken) {
+          const valid = await validateResetToken(token);
+          setIsValid(valid);
+        } else {
+          setError('Reset password functionality is not available');
+        }
+      } catch {
         setError('Failed to validate reset token');
-      } finally {
-        setIsValidating(false);
       }
     };
 
     validateToken();
   }, [token, validateResetToken]);
-
-  // Show loading state while validating
-  if (isValidating) {
-    return (
-      <div className="w-full max-w-md mx-auto">
-        <div className="bg-gray-900 rounded-2xl p-8 shadow-xl text-center">
-          <div className="text-[#00FF8B] text-xl">Validating reset link...</div>
-        </div>
-      </div>
-    );
-  }
 
   // If no token is provided or token is invalid, show an error
   if (!token || !isValid) {
@@ -76,6 +66,12 @@ export function ResetPasswordForm({ onModeChange }: ResetPasswordFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token || !resetPassword) {
+      setError('Reset password functionality is not available');
+      return;
+    }
+
+    setIsLoading(true);
     setError('');
 
     if (password !== confirmPassword) {
@@ -88,13 +84,11 @@ export function ResetPasswordForm({ onModeChange }: ResetPasswordFormProps) {
       return;
     }
 
-    setIsLoading(true);
-
     try {
       await resetPassword(token, password);
       setIsSuccess(true);
-    } catch (err) {
-      setError('Failed to reset password. The link may have expired.');
+    } catch {
+      setError('Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

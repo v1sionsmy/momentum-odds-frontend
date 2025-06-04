@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ChevronRight, 
-  X, 
-  Clock, 
   Bell, 
   User, 
-  Menu, 
-  BarChart2, 
-  ArrowUp, 
-  ArrowDown,
-  Lock,
   LogOut,
   RefreshCw,
   AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/AuthContext';
-import { AuthContainer } from '../auth/AuthContainer';
 import { OddsMiniTicker } from '../odds/OddsMiniTicker';
 import { LiveOddsPanel } from '../odds/LiveOddsPanel';
 import { GameSelector } from '../odds/GameSelector';
 import { useOddsWebSocket } from '@/hooks/useOddsWebSocket';
 import { Card } from '@/components/ui/card';
-import { LoadingSpinner, LoadingOverlay, LoadingSkeleton } from '@/components/ui/loading';
+import { LoadingOverlay } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
 import { MomentumMatchPanel } from '../odds/MomentumMatchPanel';
 
@@ -105,10 +96,7 @@ const games: Game[] = [
   }
 ];
 
-type TabType = 'moneyline' | 'spread' | 'total';
-
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('moneyline');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const { user, logout, isAuthenticated } = useAuth();
@@ -120,8 +108,7 @@ const Dashboard: React.FC = () => {
     selectedGame,
     selectGame,
     reconnect,
-    isLoading,
-    error
+    isLoading
   } = useOddsWebSocket({
     onError: (error) => {
       console.error('Odds WebSocket error:', error);
@@ -154,10 +141,7 @@ const Dashboard: React.FC = () => {
     }
   }, [isConnected, reconnect]);
 
-  // Show auth container if not authenticated
-  if (!isAuthenticated) {
-    return <AuthContainer />;
-  }
+  // Show auth container if not authenticated - REMOVED to allow guest access
   
   return (
     <div className="flex h-screen w-full bg-[#0B0E11] text-white font-sans">
@@ -188,24 +172,34 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <Bell className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer" />
-              <div className="relative group">
-                <button className="flex items-center space-x-2 text-gray-400 hover:text-white">
-                  <User className="w-5 h-5" />
-                  <span className="text-sm">{user?.name}</span>
-                </button>
-                <div className="absolute right-0 mt-2 w-48 bg-[#0F1318] rounded-lg shadow-lg py-2 hidden group-hover:block border border-[#1A1F26]">
-                  <div className="px-4 py-2 text-sm text-gray-400 border-b border-[#1A1F26]">
-                    {user?.email}
-                  </div>
-                  <button
-                    onClick={() => logout()}
-                    className="w-full px-4 py-2 text-sm text-gray-400 hover:bg-[#1A1F26] flex items-center"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign out
+              
+              {/* Only show user menu if authenticated */}
+              {isAuthenticated ? (
+                <div className="relative group">
+                  <button className="flex items-center space-x-2 text-gray-400 hover:text-white">
+                    <User className="w-5 h-5" />
+                    <span className="text-sm">{user?.username}</span>
                   </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-[#0F1318] rounded-lg shadow-lg py-2 hidden group-hover:block border border-[#1A1F26]">
+                    <div className="px-4 py-2 text-sm text-gray-400 border-b border-[#1A1F26]">
+                      {user?.email}
+                    </div>
+                    <button
+                      onClick={() => logout()}
+                      className="w-full px-4 py-2 text-sm text-gray-400 hover:bg-[#1A1F26] flex items-center"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign out
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <button 
+                  className="text-sm text-gray-400 hover:text-white px-3 py-1 border border-gray-700 rounded"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
           
@@ -255,7 +249,6 @@ const Dashboard: React.FC = () => {
               {selectedGame ? (
                 <LiveOddsPanel
                   game={selectedGame}
-                  onMarketSelect={(market) => setActiveTab(market)}
                 />
               ) : (
                 <Card className="bg-[#0F1318] border-[#1A1F26] shadow-lg p-8">
@@ -270,7 +263,7 @@ const Dashboard: React.FC = () => {
           {/* Momentum Match Panel */}
           <div className="col-span-12 lg:col-span-4">
             {selectedGame ? (
-              <MomentumMatchPanel gameId={selectedGame.id} />
+              <MomentumMatchPanel gameId={parseInt(selectedGame.id)} />
             ) : (
               <Card className="bg-[#0F1318] border-[#1A1F26] shadow-lg h-full">
                 <div className="p-4">

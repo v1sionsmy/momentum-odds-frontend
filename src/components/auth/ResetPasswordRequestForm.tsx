@@ -19,9 +19,14 @@ export function ResetPasswordRequestForm({ onModeChange }: ResetPasswordRequestF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requestPasswordReset) {
+      setError('Password reset functionality is not available');
+      return;
+    }
+
+    setIsLoading(true);
     setError('');
     setRateLimited(false);
-    setIsLoading(true);
 
     try {
       await requestPasswordReset(email);
@@ -29,9 +34,9 @@ export function ResetPasswordRequestForm({ onModeChange }: ResetPasswordRequestF
     } catch (err) {
       if (err instanceof Error && err.message.includes('Too many reset requests')) {
         setRateLimited(true);
-        setError('Too many reset requests. Please try again in 15 minutes.');
+        setError('Too many reset requests. Please wait before trying again.');
       } else {
-        setError('Failed to send reset link. Please try again.');
+        setError('Failed to send reset email. Please try again.');
       }
     } finally {
       setIsLoading(false);

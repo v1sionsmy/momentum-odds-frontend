@@ -1,7 +1,8 @@
 import axios from "axios";
+import { Game } from "../types/game";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000", // Updated to use backend at localhost:8000
+  baseURL: "https://momentum-ignition-backend.onrender.com", // Updated to use deployed backend
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -9,7 +10,7 @@ const api = axios.create({
   }
 });
 
-// Keep for reference but not currently used
+// Momentum snapshot type
 export type MomentumSnapshot = {
   id: number;
   period: number;
@@ -17,14 +18,28 @@ export type MomentumSnapshot = {
   data: Record<string, number>;
 };
 
+/** Get momentum snapshots for a game */
+export const getSnapshots = async (gameId: number, limit: number = 50): Promise<MomentumSnapshot[]> => {
+  const { data } = await api.get(`/api/games/${gameId}/momentum/snapshots`, { 
+    params: { limit } 
+  });
+  return data;
+};
+
+/** Open a live momentum stream for a game */
+export const openSnapshotStream = (gameId: number): EventSource => {
+  const url = `https://momentum-ignition-backend.onrender.com/api/games/${gameId}/momentum/stream`;
+  return new EventSource(url);
+};
+
 /** Get upcoming games schedule */
-export const getUpcomingGames = async (days: number = 7): Promise<any[]> => {
+export const getUpcomingGames = async (days: number = 7): Promise<Game[]> => {
   const { data } = await api.get(`/api/games/upcoming`, { params: { days } });
   return data;
 };
 
 /** Get today's games */
-export const getTodayGames = async (): Promise<any[]> => {
+export const getTodayGames = async (): Promise<Game[]> => {
   const { data } = await api.get('/api/games/today');
   return data;
 }; 

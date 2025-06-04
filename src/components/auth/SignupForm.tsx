@@ -20,6 +20,12 @@ export function SignupForm({ onModeChange }: SignupFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!signup) {
+      setError('Signup functionality is not available');
+      return;
+    }
+
+    setIsLoading(true);
     setError('');
 
     if (password !== confirmPassword) {
@@ -27,11 +33,9 @@ export function SignupForm({ onModeChange }: SignupFormProps) {
       return;
     }
 
-    setIsLoading(true);
-
     try {
       await signup(email, password, name);
-    } catch (err) {
+    } catch {
       setError('Failed to create account');
     } finally {
       setIsLoading(false);

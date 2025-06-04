@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useUpdatesWebSocket, UpdateMessage } from './useUpdatesWebSocket';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { UpdateMessage } from './useUpdatesWebSocket';
 
 interface OddsMovement {
   direction: 'up' | 'down' | 'neutral';
@@ -94,7 +94,7 @@ export function useOddsWebSocket(options: UseOddsWebSocketOptions = {}): UseOdds
 
   // Helper to get the WebSocket URL with token
   const getWebSocketUrl = useCallback(() => {
-    const base = process.env.NEXT_PUBLIC_ODDS_WS_URL || 'ws://localhost:8000/ws/odds';
+    const base = process.env.NEXT_PUBLIC_ODDS_WS_URL || 'wss://momentum-ignition-backend.onrender.com/ws/odds';
     const token = localStorage.getItem('token');
     if (!token) return null;
     // Remove any existing ?token=... from base
@@ -105,12 +105,12 @@ export function useOddsWebSocket(options: UseOddsWebSocketOptions = {}): UseOdds
   // Handler for all update messages
   const handleMessage = useCallback((data: UpdateMessage) => {
     if (data.type === 'ticker') {
-      setTickerOdds(data.odds);
+      setTickerOdds(data.odds as OddsItem[]);
       setIsLoading(false);
-    } else if (data.type === 'game') {
+    } else if (data.type === 'game' && data.gameId) {
       setGameOdds(prev => ({
         ...prev,
-        [data.gameId]: data.odds
+        [data.gameId!]: data.odds as GameOdds
       }));
       setIsLoading(false);
     }
@@ -220,20 +220,19 @@ export function useOddsWebSocket(options: UseOddsWebSocketOptions = {}): UseOdds
         try {
           const msg = JSON.parse(event.data);
           handleMessage(msg);
-        } catch (err) {
-          console.error('Failed to parse WebSocket message:', err);
+        } catch {
+          console.error('Failed to parse WebSocket message:');
           setError(new Error('Failed to parse WebSocket message.'));
         }
       };
-    } catch (err) {
-      console.error('Failed to create WebSocket:', err);
+    } catch {
+      console.error('Failed to create WebSocket:');
       setError(new Error('Failed to create WebSocket instance.'));
     }
   }, [getWebSocketUrl, handleMessage, cleanup, options.onConnectionChange]);
 
   // New effect to check token on mount and react to token changes
   useEffect(() => {
-    let mounted = true;
     const checkAndSetTokenStatus = () => {
       const token = localStorage.getItem('token');
       let valid = false;
@@ -266,7 +265,6 @@ export function useOddsWebSocket(options: UseOddsWebSocketOptions = {}): UseOdds
 
     // Cleanup function
     return () => {
-      mounted = false;
       clearInterval(tokenStatusInterval);
       cleanup(); // Ensure WebSocket is closed on unmount
     };

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { GameOdds } from '@/types/game';
 
 // Mock odds data for different games
-const mockOddsData: Record<string, any> = {
+const mockOddsData: Record<string, GameOdds> = {
   '1': {
     gameId: 1,
     homeTeam: 'Boston Celtics',
@@ -99,7 +100,7 @@ export async function GET(
   const { gameId } = await params;
   
   // Get odds for this game
-  let baseData = mockOddsData[gameId] || mockOddsData['default'];
+  const baseData = mockOddsData[gameId] || mockOddsData['default'];
   
   // Add some variability to simulate changing odds
   const variation = (Math.random() - 0.5) * 10; // ±5 points

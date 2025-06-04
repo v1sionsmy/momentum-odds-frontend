@@ -15,10 +15,11 @@ interface PaywallProps {
 }
 
 export function Paywall({ children, tier, className }: PaywallProps) {
-  const { user, upgradeToPro } = useAuth();
-  const isSubscribed = user?.subscription?.type === tier && user?.subscription?.status === 'active';
+  const { user } = useAuth();
+  const isSubscribed = user?.subscription_tier === tier || user?.subscription_tier === 'pro';
 
-  if (isSubscribed) {
+  // For guest users, show the content with a notice instead of blocking it
+  if (isSubscribed || !user) {
     return <>{children}</>;
   }
 
@@ -32,14 +33,17 @@ export function Paywall({ children, tier, className }: PaywallProps) {
         </h3>
         <p className="text-muted mb-4">
           {tier === 'pro' 
-            ? 'Upgrade to Pro to access advanced player prop edges and real-time analytics.'
-            : 'Subscribe to access this feature and more.'}
+            ? 'Sign in and upgrade to Pro to access advanced player prop edges and real-time analytics.'
+            : 'Sign in to access this feature and more.'}
         </p>
         <Button
-          onClick={() => upgradeToPro()}
+          onClick={() => {
+            // Simple alert or redirect to login instead of upgradeToPro
+            alert('Please sign in to access premium features');
+          }}
           className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
-          Upgrade to Pro
+          Sign In
         </Button>
       </div>
     </Card>

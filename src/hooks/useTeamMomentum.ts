@@ -6,10 +6,10 @@ interface TeamMomentum {
   playerMomentum?: Record<string, number>;
 }
 
-// Mock API for now - replace with actual api utility when available
+// API utility for backend calls
 const api = {
   get: async (url: string) => {
-    const response = await fetch(`http://localhost:8000/api${url}`);
+    const response = await fetch(`https://momentum-ignition-backend.onrender.com/api${url}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

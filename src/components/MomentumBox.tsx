@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useGameMomentum, FlashPattern } from '@/hooks/useGameMomentum';
+import { useGameMomentum } from '@/hooks/useGameMomentum';
 import Image from 'next/image';
 
 interface MomentumBoxProps {

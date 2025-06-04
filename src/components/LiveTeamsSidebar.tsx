@@ -23,7 +23,7 @@ interface LiveTeamsSidebarProps {
   liveTeams: Team[];
   upcomingTeams?: Team[];
   isLoading: boolean;
-  error: any;
+  error: string | null;
   selectedTeamId: string | null;
   onSelectTeam: (teamId: string, gameId: number, teamName: string) => void;
   onSelectPlayer: (playerId: string) => void;

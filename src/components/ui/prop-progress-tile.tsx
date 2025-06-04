@@ -19,7 +19,6 @@ const getPropStatus = (current: number, line: number, momentum: number = 0): {
   confidence: 'high' | 'medium' | 'low';
 } => {
   const progress = (current / line) * 100;
-  const remaining = line - current;
   
   // Factor in momentum for prediction
   const momentumBoost = momentum > 3 ? 15 : momentum > 2 ? 10 : momentum > 1 ? 5 : 0;
@@ -61,9 +60,8 @@ export function PropProgressTile({
   momentum = 0,
   className
 }: PropProgressTileProps) {
-  const progress = Math.min(100, (currentValue / propLine) * 100);
+  const progress = Math.min((currentValue / propLine) * 100, 100);
   const status = getPropStatus(currentValue, propLine, momentum);
-  const remaining = Math.max(0, propLine - currentValue);
   
   return (
     <div className={cn(
@@ -77,7 +75,7 @@ export function PropProgressTile({
           <span className="text-sm font-medium text-gray-300">{label} Prop Progress</span>
         </div>
         <div className="text-xs text-gray-500">
-          {remaining > 0 ? `${remaining.toFixed(1)} ${unit} needed` : 'Complete!'}
+          {currentValue >= propLine * 0.8 ? 'Complete!' : `${(propLine - currentValue).toFixed(1)} ${unit} needed`}
         </div>
       </div>
 

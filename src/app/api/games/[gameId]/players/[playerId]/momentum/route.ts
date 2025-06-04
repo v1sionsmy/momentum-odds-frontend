@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PlayerMomentumResponse } from '@/types/game';
 
 // Mock player momentum data with prop betting info
-const mockPlayerMomentumData: Record<string, any> = {
+const mockPlayerMomentumData: Record<string, PlayerMomentumResponse> = {
   // Mock player IDs and their momentum data
   'player_001': {
     playerMomentum: {
@@ -190,13 +191,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ gameId: string; playerId: string }> }
 ) {
-  const { gameId, playerId } = await params;
+  const { playerId } = await params;
   
   // Get the base data for this player
-  let baseData = mockPlayerMomentumData[playerId] || mockPlayerMomentumData['default'];
+  const baseData = mockPlayerMomentumData[playerId] || mockPlayerMomentumData['default'];
   
   // Add some variability based on time to simulate changing momentum and stats
-  const now = Date.now();
   const variation = (Math.random() - 0.5) * 0.5; // ±0.25
   const statVariation = (Math.random() - 0.5) * 2; // ±1.0 for stats
   

@@ -26,7 +26,7 @@ export function LoginForm({ onModeChange }: LoginFormProps) {
     try {
       await login(email, password);
       router.push('/dashboard');
-    } catch (err) {
+    } catch {
       setError('Invalid email or password');
     } finally {
       setIsLoading(false);
@@ -97,7 +97,7 @@ export function LoginForm({ onModeChange }: LoginFormProps) {
         </div>
         
         <div className="mt-6 text-center text-sm text-[color:var(--mo-muted)]">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <button
             type="button"
             onClick={() => onModeChange('signup')}

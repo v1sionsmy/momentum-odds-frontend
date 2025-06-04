@@ -56,7 +56,7 @@ export function MomentumBarDemo() {
               explanationText={getMomentumExplanation(item.category)}
               recentActivity={getMomentumActivity({ 
                 type: 'player', 
-                category: item.category as any, 
+                category: item.category as 'points' | 'rebounds' | 'assists' | 'blocks' | 'steals', 
                 value: item.value 
               })}
               isFlashing={flashingIndex === index}
@@ -69,7 +69,7 @@ export function MomentumBarDemo() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">Prop Betting Progress</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {propDemoData.map((item, index) => (
+            {propDemoData.map((item) => (
               <PropProgressTile
                 key={item.label}
                 label={item.label}

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Player } from '@/types/game';
 
 // Mock players data for different games
-const mockPlayersData: Record<string, any[]> = {
+const mockPlayersData: Record<string, Player[]> = {
   '1': [
     { player_id: 'player_001', name: 'Jayson Tatum', position: 'SF', minutes_played: '32:45', team_id: '1' },
     { player_id: 'player_002', name: 'Jaylen Brown', position: 'SG', minutes_played: '28:12', team_id: '1' },

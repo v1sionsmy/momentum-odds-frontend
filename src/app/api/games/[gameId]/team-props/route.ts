@@ -39,7 +39,7 @@ function calculateMovement(current: number, opening: number): number {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { gameId: string } }
+  { params }: { params: Promise<{ gameId: string }> }
 ) {
   try {
     const { gameId: gameIdParam } = await params;

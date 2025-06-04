@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { ChevronRight, Search, Bell, User, Home } from 'lucide-react';
+import { ChevronRight, Bell, User, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLiveTeams, useUpcomingTeams } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
@@ -28,9 +28,9 @@ export default function LiveGamesPage() {
   const shouldFetchLiveData = selectedGameId && !isSelectedTeamUpcoming;
   
   const { teamMomentum, isLoadingTeamMom, errorTeamMom } = useTeamMomentum(shouldFetchLiveData ? selectedGameId : null);
-  const { teamPlayers, isLoadingTeamPlayers } = useTeamPlayers(shouldFetchLiveData ? selectedGameId : null, shouldFetchLiveData ? selectedTeamName : null);
+  const { teamPlayers } = useTeamPlayers(shouldFetchLiveData ? selectedGameId : null, shouldFetchLiveData ? selectedTeamName : null);
   const { playerMomentum, correlations, currentStats, propLines, isLoadingPM, errorPM } = usePlayerMomentum(shouldFetchLiveData ? selectedGameId : null, shouldFetchLiveData ? selectedPlayerId : null);
-  const { oddsData, isLoadingOdds } = useGameOdds(shouldFetchLiveData ? selectedGameId : null);
+  const { oddsData } = useGameOdds(shouldFetchLiveData ? selectedGameId : null);
 
   const handleTeamSelect = (teamId: string, gameId: number, teamName: string) => {
     setSelectedTeamId(teamId);
@@ -130,7 +130,7 @@ export default function LiveGamesPage() {
                     {selectedTeamName} vs {selectedTeam?.opponent}
                   </div>
                   <div className="text-sm mb-6 leading-relaxed">
-                    This game hasn't started yet. Live momentum data, player statistics, and real-time betting markets will be available once the game begins.
+                    This game hasn&apos;t started yet. Live momentum data, player statistics, and real-time betting markets will be available once the game begins.
                   </div>
                   <div className="bg-gray-800 rounded-lg p-4 text-sm">
                     <div className="text-gray-300 mb-2">Coming Soon:</div>
@@ -151,7 +151,7 @@ export default function LiveGamesPage() {
                   currentStats={currentStats}
                   propLines={propLines}
                   isLoading={isLoadingPM}
-                  error={errorPM}
+                  error={errorPM?.message || null}
                 />
               </div>
             ) : selectedTeamId ? (
@@ -159,7 +159,7 @@ export default function LiveGamesPage() {
                 <MainMomentumBox
                   teamMomentum={teamMomentum}
                   isLoading={isLoadingTeamMom}
-                  error={errorTeamMom}
+                  error={errorTeamMom?.message || null}
                   selectedTeamName={selectedTeamName}
                   selectedGameId={selectedGameId}
                 />

@@ -25,8 +25,6 @@ export interface Team {
 
 const fetchGames = async (): Promise<Game[]> => {
   const token = localStorage.getItem('token');
-  console.log('Auth token:', token); // Debug token
-
   const headers: Record<string, string> = {};
   if (token && token !== 'null') {
     headers['Authorization'] = `Bearer ${token}`;
@@ -34,7 +32,7 @@ const fetchGames = async (): Promise<Game[]> => {
   console.log('Request headers:', headers); // Debug headers
 
   // Updated to use demo endpoint that returns the most relevant game
-  const apiUrl = `http://localhost:8000/api/games/demo`;
+  const apiUrl = `https://momentum-ignition-backend.onrender.com/api/games/demo`;
   console.log('API URL:', apiUrl); // Debug API URL
 
   const res = await fetch(apiUrl, {
@@ -60,7 +58,7 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const apiUrl = `http://localhost:8000/api/games/demo`;
+  const apiUrl = `https://momentum-ignition-backend.onrender.com/api/games/demo`;
   const res = await fetch(apiUrl, {
     headers,
   });

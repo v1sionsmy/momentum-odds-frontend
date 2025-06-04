@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React from 'react';
 import { MomentumBar } from "./ui/momentum-bar";
 import { TeamPropProgressCard } from "./ui/team-prop-progress-card";
-import { HelpTooltip } from "./ui/help-tooltip";
 import { PlayerHoverDetails } from "./ui/player-hover-details";
 import { getMomentumActivity, getMomentumExplanation } from "@/hooks/useMomentumHelpers";
 import { useTeamProps } from "@/hooks/useTeamProps";
@@ -20,30 +19,25 @@ const teamColors: Record<string, string> = {
   "San Antonio Spurs": "#C4CED4"
 };
 
-// Consistent flashing hook that matches PlayerMomentumModule
+// Hook for managing multiple flashing states
 function useMultipleFlasher(rates: number[]) {
-  const [flashStates, setFlashStates] = useState<boolean[]>(() => 
+  const [flashStates, setFlashStates] = React.useState<boolean[]>(
     rates.map(() => false)
   );
 
-  useEffect(() => {
-    const intervals: NodeJS.Timeout[] = [];
-    
-    rates.forEach((rate, index) => {
-      if (rate > 0) {
-        const interval = setInterval(() => {
-          setFlashStates(prev => {
-            const newStates = [...prev];
-            newStates[index] = !newStates[index];
-            return newStates;
-          });
-        }, rate);
-        intervals.push(interval);
-      }
+  React.useEffect(() => {
+    const intervals = rates.map((rate, index) => {
+      return setInterval(() => {
+        setFlashStates(prev => {
+          const newStates = [...prev];
+          newStates[index] = !newStates[index];
+          return newStates;
+        });
+      }, rate);
     });
 
     return () => {
-      intervals.forEach(interval => clearInterval(interval));
+      intervals.forEach(clearInterval);
     };
   }, [rates]);
 
@@ -58,7 +52,7 @@ interface TeamMomentum {
 interface MainMomentumBoxProps {
   teamMomentum: TeamMomentum | null;
   isLoading: boolean;
-  error: any;
+  error: string | null;
   selectedTeamName?: string | null;
   selectedGameId?: number | null;
 }
@@ -76,7 +70,7 @@ function MainMomentumBox({
   // Add team props data
   const { teamProps, isLoading: isLoadingProps } = useTeamProps(selectedGameId || null);
   
-  const flashRates = useMemo(() => {
+  const flashRates = React.useMemo(() => {
     if (!teamMomentum) {
       return [BASE_INTERVAL, BASE_INTERVAL];
     }
@@ -93,7 +87,7 @@ function MainMomentumBox({
   
   // Always call the same hook consistently
   const flashStates = useMultipleFlasher(flashRates);
-  const [team1Flashing, team2Flashing] = flashStates;
+  const [team1Flashing] = flashStates;
   
   if (isLoading) {
     return <div className="text-gray-400 text-center">Loading team momentum…</div>;
@@ -111,7 +105,6 @@ function MainMomentumBox({
   
   // Get team colors (fallback to default colors if not found)
   const team1Color = selectedTeamName ? teamColors[selectedTeamName] || "#007A33" : "#007A33";
-  const team2Color = "#CE1141"; // Default to a contrasting color for opponent
   
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-4 lg:p-8 space-y-6 lg:space-y-8">

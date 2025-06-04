@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
-const WS_URL = process.env.NEXT_PUBLIC_UPDATES_WS_URL || 'ws://localhost:8000/ws/updates';
+const WS_URL = process.env.NEXT_PUBLIC_UPDATES_WS_URL || 'wss://momentum-ignition-backend.onrender.com/ws/updates';
 
-export type UpdateMessage = {
+export interface UpdateMessage {
   type: string;
-  [key: string]: any;
-};
+  data: Record<string, unknown>;
+  odds?: unknown;
+  gameId?: string;
+}
 
 export function useUpdatesWebSocket(onMessage: (msg: UpdateMessage) => void) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -19,12 +21,12 @@ export function useUpdatesWebSocket(onMessage: (msg: UpdateMessage) => void) {
 
     ws.onopen = () => setIsConnected(true);
     ws.onclose = () => setIsConnected(false);
-    ws.onerror = (e) => setError(new Error('WebSocket error'));
+    ws.onerror = () => setError(new Error('WebSocket error'));
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
         onMessage(msg);
-      } catch (err) {
+      } catch {
         setError(new Error('Failed to parse WebSocket message'));
       }
     };

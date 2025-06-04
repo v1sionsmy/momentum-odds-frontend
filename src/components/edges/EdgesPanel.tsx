@@ -1,36 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from 'react';
 import { useLiveEdges } from "@/hooks/useLiveEdges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { Edge } from "@/types/edge";
-import { AlertCircle, ChevronDown, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { LoadingSpinner } from "@/components/ui/loading";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-type SortField = "edgePct" | "playerName" | "market";
-type SortOrder = "asc" | "desc";
-
-interface EdgesPanelProps {
-  gameId?: number;
-  className?: string;
-}
-
-const EdgeSkeleton = () => (
-  <div className="animate-pulse space-y-2">
-    <div className="h-4 bg-muted rounded w-3/4" />
-    <div className="h-3 bg-muted rounded w-1/2" />
-  </div>
-);
 
 const sortFn: Record<string, (a: Edge, b: Edge) => number> = {
   edgePct: (a, b) => b.edgePct - a.edgePct,

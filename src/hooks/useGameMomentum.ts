@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8000", // Updated to use backend at localhost:8000
+  baseURL: "https://momentum-ignition-backend.onrender.com", // Updated to use deployed backend
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -46,7 +46,6 @@ export const useGameMomentum = (gameId: number | null) => {
     // Calculate ratio - normalize to get relative weights
     const total = team1Value + team2Value;
     const team1Ratio = team1Value / total;
-    const team2Ratio = team2Value / total;
 
     // Create pattern based on ratios
     // Base flash duration is 500ms, we'll create a pattern for 10 flashes (5 seconds total)
@@ -103,7 +102,7 @@ export const useGameMomentum = (gameId: number | null) => {
   };
 
   // Fetch momentum data
-  const fetchMomentum = async (gameId: number) => {
+  const fetchMomentum = useCallback(async (gameId: number) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -121,7 +120,7 @@ export const useGameMomentum = (gameId: number | null) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Set up polling
   useEffect(() => {
@@ -140,7 +139,7 @@ export const useGameMomentum = (gameId: number | null) => {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [gameId]);
+  }, [gameId, fetchMomentum]);
 
   return {
     momentumData,
@@ -252,9 +251,4 @@ const getTeamColors = (teamId: string): TeamColors => {
   };
 
   return TEAM_COLORS_BY_ID[teamId] || { primary: '#888888', secondary: '#666666' }; // Default gray for unknown teams
-};
-
-// Backward compatibility function
-const getTeamColor = (teamId: string): string => {
-  return getTeamColors(teamId).primary;
 }; 

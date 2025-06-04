@@ -116,7 +116,6 @@ const getMomentumState = (surging: boolean, marketConfidence: 'high' | 'medium' 
 };
 
 export function TeamPropProgressCard({
-  teamName,
   marketType,
   currentOdds,
   openingOdds,
@@ -125,8 +124,7 @@ export function TeamPropProgressCard({
   movementDirection,
   movementMagnitude,
   impliedProbability,
-  marketConfidence,
-  className
+  marketConfidence
 }: BettingMarketCardProps) {
   const emoji = getMarketEmoji(marketType);
   const movement = getMovementIndicator(movementDirection, movementMagnitude);
@@ -142,7 +140,6 @@ export function TeamPropProgressCard({
       className={cn(
         "relative bg-[#1A1F26] rounded-lg p-4 border-2 transition-all duration-300 hover:scale-[1.02] cursor-pointer",
         surging && momentum.level === 'strong' && "momentum-glow",
-        className
       )}
       style={{
         borderColor: momentum.borderColor,

@@ -89,7 +89,6 @@ export function PlayerHoverDetails({ playerName, momentum, className, children }
   useEffect(() => {
     if (isVisible && containerRef.current && tooltipRef.current) {
       const container = containerRef.current.getBoundingClientRect();
-      const tooltip = tooltipRef.current.getBoundingClientRect();
       const viewport = {
         width: window.innerWidth,
         height: window.innerHeight
@@ -170,11 +169,15 @@ export function PlayerHoverDetails({ playerName, momentum, className, children }
       : "border-4 border-transparent border-b-gray-600";
   };
 
+  const handleMouseEnter = () => {
+    setIsVisible(true);
+  };
+
   return (
     <div className="relative inline-block w-full" ref={containerRef}>
       <div
         className={cn("cursor-pointer w-full", className)}
-        onMouseEnter={() => setIsVisible(true)}
+        onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setIsVisible(false)}
       >
         {children}

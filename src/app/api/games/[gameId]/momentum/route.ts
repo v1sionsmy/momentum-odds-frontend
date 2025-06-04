@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { GameMomentumData } from '@/types/game';
 
 type TeamMomentum = Record<string, number>;
 
 // Mock data for testing - corresponds to our games
-const mockMomentumDataByGame: Record<string, any> = {
+const mockMomentumDataByGame: Record<string, GameMomentumData> = {
   // Game 1: Boston Celtics vs New York Knicks
   '1': {
     teamMomentum: {
@@ -64,11 +65,10 @@ export async function GET(
   const { gameId } = await params;
   
   // Get the base data for this game
-  let baseData = mockMomentumDataByGame[gameId] || mockMomentumDataByGame['default'];
+  const baseData = mockMomentumDataByGame[gameId] || mockMomentumDataByGame['default'];
   
   // Add some variability based on time to simulate changing momentum
   const now = Date.now();
-  const useVariant = Math.floor(now / 10000) % 2; // Switch every 10 seconds
   
   // Add some random variation
   const variation = (Math.random() - 0.5) * 0.5; // ±0.25

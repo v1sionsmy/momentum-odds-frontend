@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import type { Edge } from "@/types/edge";
 
-const WS_ORIGIN = process.env.NEXT_PUBLIC_WS_ORIGIN ?? "ws://localhost:8000";
+const WS_ORIGIN = process.env.NEXT_PUBLIC_WS_ORIGIN ?? "wss://momentum-ignition-backend.onrender.com";
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
@@ -41,7 +41,7 @@ export const useLiveEdges = (gameId?: number) => {
           copy[idx] = edge;
           return copy;
         });
-      } catch (err) {
+      } catch {
         console.error("[Edges] Bad edge payload:", e.data);
       }
     };

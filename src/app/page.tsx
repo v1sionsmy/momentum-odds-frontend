@@ -95,7 +95,7 @@ export default function Home() {
               Our Mission
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Momentum Odds exists to answer a simple question: "What does the game feel like right now?"
+              Momentum Odds exists to answer a simple question: &ldquo;What does the game feel like right now?&rdquo;
             </p>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
@@ -120,21 +120,21 @@ export default function Home() {
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
               While binge-watching late-night NBA reruns, our founder Jayden Deese kept noticing moments where crowd energy 
               spiked but the numbers on screen barely budged. So he hacked together a small Python script that scraped 
-              play-by-play data, weighed each event's "emotional gravity," and plotted it as a living heartbeat next to the score.
+              play-by-play data, weighed each event&apos;s &ldquo;emotional gravity,&rdquo; and plotted it as a living heartbeat next to the score.
             </p>
             <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-6 mb-6">
               <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">
                 That scrappy visualization revealed two truths:
               </p>
               <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-2">
-                <li>Momentum isn't a myth—it's a trackable, repeatable pattern.</li>
+                <li>Momentum isn&apos;t a myth—it&apos;s a trackable, repeatable pattern.</li>
                 <li>Vegas lines react slowly to those patterns.</li>
               </ul>
             </div>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               What began as a curiosity project snowballed into a full-blown AI engine that now powers Momentum Odds. 
               Today the same codebase Jayden wrote between finals and pizza runs ingests thousands of data points per minute, 
-              fuses them with live bookmaker odds, and surfaces edge-finding alerts the moment a game's pulse shifts.
+              fuses them with live bookmaker odds, and surfaces edge-finding alerts the moment a game&apos;s pulse shifts.
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function Home() {
             Ready to Feel the Game?
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Jump into tonight's live dashboard or rewind a classic matchup to watch the exact second the tide turned. 
+            Jump into tonight&apos;s live dashboard or rewind a classic matchup to watch the exact second the tide turned. 
             Because sports swing on moments—and now you can, too.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
