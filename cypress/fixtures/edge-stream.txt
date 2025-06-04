@@ -1,0 +1,5 @@
+data: {"edgeId":"edge1","gameId":123,"playerId":"player1","playerName":"Jayson Tatum","market":"PTS","edgePct":0.35,"timestamp":"2024-03-20T12:00:00Z","odds":[{"bookmaker":"DraftKings","line":28.5,"over":-110,"under":-110}],"modelProjection":{"mean":32.1,"stdDev":4.2,"confidence":0.85}}
+
+data: {"edgeId":"edge2","gameId":123,"playerId":"player2","playerName":"Jaylen Brown","market":"AST","edgePct":0.15,"timestamp":"2024-03-20T12:00:00Z","odds":[{"bookmaker":"FanDuel","line":4.5,"over":-115,"under":-105}],"modelProjection":{"mean":5.2,"stdDev":2.1,"confidence":0.75}}
+
+data: {"edgeId":"edge1","gameId":123,"playerId":"player1","playerName":"Jayson Tatum","market":"PTS","edgePct":0.42,"timestamp":"2024-03-20T12:01:00Z","odds":[{"bookmaker":"DraftKings","line":28.5,"over":-120,"under":-100}],"modelProjection":{"mean":32.8,"stdDev":4.0,"confidence":0.88}} 

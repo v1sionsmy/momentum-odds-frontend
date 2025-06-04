@@ -24,3 +24,46 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom momentum animations */
+@keyframes momentum-flash-strong {
+  0%, 100% { 
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.25;
+    transform: scale(1.01);
+  }
+}
+
+@keyframes momentum-flash-medium {
+  0%, 100% { 
+    opacity: 0.1;
+  }
+  50% { 
+    opacity: 0.2;
+  }
+}
+
+@keyframes momentum-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--glow-color, #00FF8B)40;
+  }
+  50% {
+    box-shadow: 0 0 30px var(--glow-color, #00FF8B)60, 0 0 40px var(--glow-color, #00FF8B)20;
+  }
+}
+
+/* Animation classes */
+.momentum-flash-strong {
+  animation: momentum-flash-strong 1s ease-in-out infinite;
+}
+
+.momentum-flash-medium {
+  animation: momentum-flash-medium 2s ease-in-out infinite;
+}
+
+.momentum-glow {
+  animation: momentum-glow 1s ease-in-out infinite;
+}
