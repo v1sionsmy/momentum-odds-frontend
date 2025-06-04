@@ -20,7 +20,7 @@ export type MomentumSnapshot = {
 
 /** Get momentum snapshots for a game */
 export const getSnapshots = async (gameId: number, limit: number = 50): Promise<MomentumSnapshot[]> => {
-  const { data } = await api.get(`/api/games/${gameId}/momentum/snapshots`, { 
+  const { data } = await api.get(`/api/games/${gameId}/snapshots`, { 
     params: { limit } 
   });
   return data;
@@ -28,7 +28,7 @@ export const getSnapshots = async (gameId: number, limit: number = 50): Promise<
 
 /** Open a live momentum stream for a game */
 export const openSnapshotStream = (gameId: number): EventSource => {
-  const url = `https://momentum-ignition-backend.onrender.com/api/games/${gameId}/momentum/stream`;
+  const url = `https://momentum-ignition-backend.onrender.com/api/stream/${gameId}`;
   return new EventSource(url);
 };
 
