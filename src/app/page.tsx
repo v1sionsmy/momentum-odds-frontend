@@ -35,9 +35,11 @@ export default function Home() {
                   Try Live Dashboard
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="px-8 py-3">
-                Watch Demo
-              </Button>
+              <Link href="/about-ignition">
+                <Button variant="outline" size="lg" className="px-8 py-3">
+                  About Ignition
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -177,7 +179,7 @@ export default function Home() {
             Turn gut-level hunches into measurable momentum you can trust.
           </p>
           <p className="text-sm text-gray-500">
-            © 2024 Momentum Odds. All rights reserved.
+            Momentum Ignition LLC
           </p>
         </div>
       </footer>
