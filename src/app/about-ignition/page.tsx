@@ -52,7 +52,7 @@ export default function AboutIgnition() {
             <h2 className="text-2xl font-bold mb-6 text-orange-600 dark:text-orange-500">Origin & Evolution</h2>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6">
               <p className="text-lg leading-relaxed mb-6 text-gray-700 dark:text-gray-300">
-                What started as a late-night prototype during my final semester—plotting "game mood swings" on a single screen—has 
+                What started as a late-night prototype during my final semester—plotting &ldquo;game mood swings&rdquo; on a single screen—has 
                 matured into an enterprise-grade analytics engine:
               </p>
               <ul className="list-none space-y-4">

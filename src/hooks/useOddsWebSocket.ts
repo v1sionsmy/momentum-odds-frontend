@@ -229,7 +229,7 @@ export function useOddsWebSocket(options: UseOddsWebSocketOptions = {}): UseOdds
       console.error('Failed to create WebSocket:');
       setError(new Error('Failed to create WebSocket instance.'));
     }
-  }, [getWebSocketUrl, handleMessage, cleanup, options.onConnectionChange]);
+  }, [getWebSocketUrl, handleMessage, cleanup, options]);
 
   // New effect to check token on mount and react to token changes
   useEffect(() => {

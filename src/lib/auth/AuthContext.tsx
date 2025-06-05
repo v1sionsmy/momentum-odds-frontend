@@ -133,6 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check auth on mount
   useEffect(() => {
+    // We can safely ignore the exhaustive-deps warning here because we only want to run this on mount
+    // and checkAuth is stable throughout the component's lifecycle
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     checkAuth();
   }, []);
 
