@@ -3,6 +3,7 @@ const API_CONFIG = {
   production: process.env.NEXT_PUBLIC_API_URL || 'https://nba-analytics-api.onrender.com' // Use env var or fallback
 };
 
+// Force deployment update - 2024-12-29 18:05
 const API_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
 
 class NBAAnalyticsAPI {
