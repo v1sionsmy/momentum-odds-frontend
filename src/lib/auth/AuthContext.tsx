@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 // Constants
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://momentum-ignition-backend.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nba-analytics-api.onrender.com';
 
 // Types
 interface User {

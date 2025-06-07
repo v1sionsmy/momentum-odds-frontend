@@ -33,13 +33,13 @@ interface PropLines {
   steals: number;
 }
 
-// Environment-based API configuration for legacy momentum endpoints
-const LEGACY_API_CONFIG = {
-  development: "http://localhost:8000", // Different port for legacy API
-  production: "https://momentum-ignition-backend.onrender.com"
+// API configuration
+const API_CONFIG = {
+  development: 'http://localhost:8000',
+  production: "https://nba-analytics-api.onrender.com" // FIXED: Use correct backend
 };
 
-const LEGACY_BASE_URL = LEGACY_API_CONFIG[process.env.NODE_ENV as keyof typeof LEGACY_API_CONFIG] || LEGACY_API_CONFIG.development;
+const LEGACY_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
 
 // API utility for backend calls
 const api = {
