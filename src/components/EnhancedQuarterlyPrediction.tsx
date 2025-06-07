@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,11 +26,9 @@ interface StatPrediction {
 export default function EnhancedQuarterlyPrediction({
   gameId,
   playerId,
-  playerName,
-  quarterlyPrediction
-}: EnhancedQuarterlyPredictionProps) {
+  playerName
+}: Omit<EnhancedQuarterlyPredictionProps, 'quarterlyPrediction'>) {
   const [selectedQuarter, setSelectedQuarter] = useState<number>(2);
-  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
   
   const { predictQuarterly, predictionData, isLoading, error } = useQuarterlyPrediction();
 

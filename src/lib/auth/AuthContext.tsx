@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 // Constants
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://momentum-ignition-backend.onrender.com';
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Check auth function
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
@@ -123,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   // Logout function
   const logout = () => {
@@ -133,11 +133,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check auth on mount
   useEffect(() => {
-    // We can safely ignore the exhaustive-deps warning here because we only want to run this on mount
-    // and checkAuth is stable throughout the component's lifecycle
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   return (
     <AuthContext.Provider value={{ 
