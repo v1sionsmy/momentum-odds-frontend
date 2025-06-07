@@ -69,14 +69,13 @@ function useFlasher(rate: number) {
 
 function TeamView({
   gameId,
-  teamId,
   teamName,
   teamMomentum,
   isLoading,
   error,
   teamPlayers,
   onPlayerSelect
-}: TeamViewProps) {
+}: Omit<TeamViewProps, 'teamId'>) {
   const [showQuarterlyPrediction, setShowQuarterlyPrediction] = React.useState(false);
 
   // Calculate flash rate for team momentum
@@ -186,7 +185,7 @@ function TeamView({
           <div className="text-center py-8 text-gray-400">
             <div className="text-lg mb-2">🎯 Advanced Team Forecasting</div>
             <div className="text-sm">
-              Click "Show Predictions" to access quarterly performance analytics and AI-powered team forecasts
+              Click &quot;Show Predictions&quot; to access quarterly performance analytics and AI-powered team forecasts
             </div>
           </div>
         )}

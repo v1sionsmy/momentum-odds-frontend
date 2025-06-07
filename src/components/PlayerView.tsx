@@ -6,13 +6,18 @@ interface PlayerViewProps {
   gameId: number | null;
   playerId: string | null;
   playerName: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   playerMomentum: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   correlations: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currentStats: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   propLines: any;
   isLoading: boolean;
   error: string | null;
   showQuarterlyPrediction: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   quarterlyPrediction: any;
 }
 

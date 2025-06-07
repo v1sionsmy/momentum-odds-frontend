@@ -34,6 +34,7 @@ const fetchGames = async (): Promise<Game[]> => {
     
     if (data.success && Array.isArray(data.games)) {
       // Transform the API response to match our Game interface
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transformedGames = data.games.map((game: any) => ({
         id: game.id,
         api_game_id: game.id,
@@ -69,6 +70,7 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
       const now = new Date();
       console.log('📅 Current time:', now.toISOString());
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allTransformed = data.games.map((game: any) => ({
         id: game.id,
         api_game_id: game.id,

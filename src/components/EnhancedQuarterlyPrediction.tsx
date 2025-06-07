@@ -29,17 +29,10 @@ export default function EnhancedQuarterlyPrediction({
   playerName,
   quarterlyPrediction
 }: EnhancedQuarterlyPredictionProps) {
-  const [selectedQuarter, setSelectedQuarter] = useState<number>(4);
-  const [autoPredict, setAutoPredict] = useState(false);
-  const { predictionData, isLoading, error, predictQuarterly } = quarterlyPrediction;
-
-  // Auto-predict for Q4 when component mounts
-  useEffect(() => {
-    if (gameId && playerId && selectedQuarter && !predictionData && !isLoading) {
-      setAutoPredict(true);
-      predictQuarterly(gameId, playerId, selectedQuarter);
-    }
-  }, [gameId, playerId, selectedQuarter, predictionData, isLoading, predictQuarterly]);
+  const [selectedQuarter, setSelectedQuarter] = useState<number>(2);
+  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
+  
+  const { predictQuarterly, predictionData, isLoading, error } = useQuarterlyPrediction();
 
   const handleQuarterSelect = (quarter: number) => {
     setSelectedQuarter(quarter);

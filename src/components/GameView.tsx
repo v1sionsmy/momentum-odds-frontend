@@ -35,7 +35,6 @@ function GameView({ gameId, liveTeams, upcomingTeams, onTeamSelect }: GameViewPr
 
   const [team1, team2] = gameTeams;
   const isLive = liveTeams.some(t => t.gameId === gameId);
-  const isUpcoming = !isLive;
 
   return (
     <div className="w-full max-w-5xl mx-auto">

@@ -59,6 +59,7 @@ interface MainMomentumBoxProps {
   selectedTeamName?: string | null;
   selectedGameId?: number | null;
   isReplayMode?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   snapshots?: any[];
   currentSnapshotId?: number;
 }
@@ -108,9 +109,6 @@ function MainMomentumBox({
   }
 
   const teams = Object.entries(teamMomentum.teamMomentum);
-  
-  // Get team colors (fallback to default colors if not found)
-  const team1Color = selectedTeamName ? teamColors[selectedTeamName] || "#007A33" : "#007A33";
   
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-4 lg:p-8 space-y-6 lg:space-y-8">
