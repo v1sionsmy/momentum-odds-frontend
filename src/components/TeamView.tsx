@@ -173,13 +173,6 @@ function TeamView({
             gameId={gameId || 0}
             playerId={0}
             playerName={teamName || 'Team'}
-            quarterlyPrediction={{
-              predictionData: null,
-              isLoading: false,
-              error: null,
-              predictQuarterly: async () => {},
-              clearPrediction: () => {}
-            }}
           />
         ) : (
           <div className="text-center py-8 text-gray-400">
