@@ -6,7 +6,6 @@ import { useLiveTeams, useUpcomingTeams } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
 import { usePlayerMomentum } from '@/hooks/usePlayerMomentum';
 import { useTeamMomentum } from '@/hooks/useTeamMomentum';
-import { useQuarterlyPrediction } from '@/hooks/useQuarterlyPrediction';
 import GamesSidebar from '@/components/GamesSidebar';
 import GameView from '@/components/GameView';
 import TeamView from '@/components/TeamView';
@@ -37,7 +36,6 @@ export default function LiveGamesPage() {
   const { teamMomentum, isLoadingTeamMom, errorTeamMom } = useTeamMomentum(shouldFetchLiveData ? selectedGameId : null);
   const { teamPlayers } = useTeamPlayers(shouldFetchLiveData ? selectedGameId : null, shouldFetchLiveData ? selectedTeamName : null);
   const { playerMomentum, correlations, currentStats, propLines, isLoadingPM, errorPM } = usePlayerMomentum(shouldFetchLiveData ? selectedGameId : null, shouldFetchLiveData ? selectedPlayerId : null);
-  const quarterlyPrediction = useQuarterlyPrediction();
 
   // Navigation handlers
   const handleGameSelect = (gameId: number) => {
@@ -273,7 +271,6 @@ export default function LiveGamesPage() {
                     isLoading={isLoadingPM}
                     error={errorPM?.message || null}
                     showQuarterlyPrediction={showQuarterlyPrediction}
-                    quarterlyPrediction={quarterlyPrediction}
                   />
                 )}
               </div>

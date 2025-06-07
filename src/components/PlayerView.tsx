@@ -17,8 +17,6 @@ interface PlayerViewProps {
   isLoading: boolean;
   error: string | null;
   showQuarterlyPrediction: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  quarterlyPrediction: any;
 }
 
 function PlayerView({
@@ -31,8 +29,7 @@ function PlayerView({
   propLines,
   isLoading,
   error,
-  showQuarterlyPrediction,
-  quarterlyPrediction
+  showQuarterlyPrediction
 }: PlayerViewProps) {
   if (isLoading) {
     return <div className="text-gray-400 text-center">Loading player data…</div>;
@@ -70,7 +67,6 @@ function PlayerView({
             gameId={gameId || 0}
             playerId={parseInt(playerId)}
             playerName={playerName}
-            quarterlyPrediction={quarterlyPrediction}
           />
         </div>
       ) : (
