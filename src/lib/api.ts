@@ -1,15 +1,17 @@
 const API_CONFIG = {
   development: 'http://localhost:8000',
-  production: process.env.NEXT_PUBLIC_API_URL || 'https://nba-analytics-api.onrender.com' // Use env var or fallback
+  production: 'https://nba-analytics-api.onrender.com' // HARDCODED FIX - force correct backend
 };
 
 // Force deployment update - 2024-12-29 18:05
 // Updated .env.local with correct backend URLs - 2024-12-29 18:20
 // DEBUG: Environment check for CORS fix - 2024-12-29 18:25
+// EMERGENCY HARDCODE FIX - 2024-12-29 18:30
 console.log('🔍 API_CONFIG check:', {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  final_config: API_CONFIG
+  final_config: API_CONFIG,
+  hardcoded_production: 'https://nba-analytics-api.onrender.com'
 });
 
 const API_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
