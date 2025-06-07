@@ -1,8 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
+// Environment-based API configuration for legacy momentum endpoints
+const LEGACY_API_CONFIG = {
+  development: "http://localhost:8001", // Different port for legacy API
+  production: "https://momentum-ignition-backend.onrender.com"
+};
+
+const LEGACY_BASE_URL = LEGACY_API_CONFIG[process.env.NODE_ENV as keyof typeof LEGACY_API_CONFIG] || LEGACY_API_CONFIG.development;
+
 const api = axios.create({
-  baseURL: "https://momentum-ignition-backend.onrender.com", // Updated to use deployed backend
+  baseURL: LEGACY_BASE_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

@@ -1,29 +1,32 @@
-import React from 'react';
-import { MomentumBar } from "./ui/momentum-bar";
-import { TeamPropProgressCard } from "./ui/team-prop-progress-card";
-import { PlayerHoverDetails } from "./ui/player-hover-details";
-import { getMomentumActivity, getMomentumExplanation } from "@/hooks/useMomentumHelpers";
-import { useTeamProps } from "@/hooks/useTeamProps";
+import React from "react";
+import { PlayerHoverDetails } from "@/components/ui/player-hover-details";
+import { MomentumBar } from "@/components/ui/momentum-bar";
+import { getMomentumExplanation, getMomentumActivity } from "@/hooks/useMomentumHelpers";
+import { MomentumTimeline } from "@/components/MomentumTimeline";
 
-// Team color mapping
+// Team colors for visual consistency
 const teamColors: Record<string, string> = {
   "Boston Celtics": "#007A33",
-  "New York Knicks": "#006BB6", 
+  "Brooklyn Nets": "#000000",
+  "New York Knicks": "#006BB6",
+  "Philadelphia 76ers": "#006BB6",
+  "Toronto Raptors": "#CE1141",
+  "Golden State Warriors": "#006BB6",
+  "Los Angeles Clippers": "#C8102E",
   "Los Angeles Lakers": "#552583",
-  "Golden State Warriors": "#1D428A",
-  "Miami Heat": "#98002E",
+  "Phoenix Suns": "#E56020",
+  "Sacramento Kings": "#5A2D81",
   "Chicago Bulls": "#CE1141",
-  "Denver Nuggets": "#0E2240",
-  "Phoenix Suns": "#1D1160",
-  "Dallas Mavericks": "#00538C",
-  "San Antonio Spurs": "#C4CED4"
+  "Cleveland Cavaliers": "#860038",
+  "Detroit Pistons": "#C8102E",
+  "Indiana Pacers": "#002D62",
+  "Milwaukee Bucks": "#00471B",
+  "Oklahoma City Thunder": "#007AC1",
+  "Minnesota Timberwolves": "#0C2340"
 };
 
-// Hook for managing multiple flashing states
 function useMultipleFlasher(rates: number[]) {
-  const [flashStates, setFlashStates] = React.useState<boolean[]>(
-    rates.map(() => false)
-  );
+  const [flashStates, setFlashStates] = React.useState<boolean[]>(rates.map(() => false));
 
   React.useEffect(() => {
     const intervals = rates.map((rate, index) => {
@@ -37,7 +40,7 @@ function useMultipleFlasher(rates: number[]) {
     });
 
     return () => {
-      intervals.forEach(clearInterval);
+      intervals.forEach(interval => clearInterval(interval));
     };
   }, [rates]);
 
@@ -55,6 +58,9 @@ interface MainMomentumBoxProps {
   error: string | null;
   selectedTeamName?: string | null;
   selectedGameId?: number | null;
+  isReplayMode?: boolean;
+  snapshots?: any[];
+  currentSnapshotId?: number;
 }
 
 function MainMomentumBox({
@@ -62,13 +68,13 @@ function MainMomentumBox({
   isLoading,
   error,
   selectedTeamName,
-  selectedGameId
+  selectedGameId,
+  isReplayMode = false,
+  snapshots = [],
+  currentSnapshotId
 }: MainMomentumBoxProps) {
   // Calculate flash rates - always calculate consistently
   const BASE_INTERVAL = 1000;
-  
-  // Add team props data
-  const { teamProps, isLoading: isLoadingProps } = useTeamProps(selectedGameId || null);
   
   const flashRates = React.useMemo(() => {
     if (!teamMomentum) {
@@ -108,41 +114,32 @@ function MainMomentumBox({
   
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-4 lg:p-8 space-y-6 lg:space-y-8">
-      {/* Simplified Team Momentum Header */}
+      {/* Enhanced Team Momentum Header */}
       <div className="text-center">
         <h2 className="text-xl lg:text-2xl font-bold text-white mb-1">
-          {selectedTeamName || 'Team'} Live Momentum
+          {isReplayMode ? 'Game Momentum Replay' : `${selectedTeamName || 'Team'} Live Momentum`}
         </h2>
-        <div className="text-sm text-gray-400">Real-time performance tracking</div>
+        <div className="text-sm text-gray-400">
+          {isReplayMode ? 'Historical momentum data replay' : 'Real-time performance tracking'}
+        </div>
       </div>
       
-      {/* Single Team Momentum Bar */}
-      <div className="w-full max-w-2xl">
-        {teams.length > 0 && (() => {
-          // Find the selected team's data or use the first team
-          const selectedTeamData = teams.find(([teamId]) => {
-            // If we have a selected team name, try to match it
-            if (selectedTeamName) {
-              return teamId === selectedTeamName || teamId === "18"; // Assuming selected team has ID 18
-            }
-            return true; // Default to first team
-          }) || teams[0];
-          
-          const [teamId, momentum] = selectedTeamData;
-          const isFlashing = team1Flashing; // Use the flashing state
-          const teamColor = team1Color;
-          const teamName = selectedTeamName || `Team ${teamId}`;
+      {/* Team Momentum Bars */}
+      <div className="w-full max-w-4xl space-y-4">
+        {teams.length > 0 && teams.map(([teamName, momentum], index) => {
+          const isFlashing = index === 0 ? team1Flashing : flashStates[1] || false;
+          const teamColor = teamColors[teamName] || (index === 0 ? "#007A33" : "#006BB6");
           
           return (
             <PlayerHoverDetails
-              key={teamId}
+              key={teamName}
               playerName={teamName}
               momentum={momentum}
             >
               <MomentumBar
                 label={teamName}
                 value={momentum}
-                maxValue={10}
+                maxValue={1}
                 minValue={0}
                 emoji="🏀"
                 explanationTitle="Team Momentum"
@@ -158,96 +155,79 @@ function MainMomentumBox({
               />
             </PlayerHoverDetails>
           );
-        })()}
+        })}
       </div>
 
-      {/* Enhanced Team Betting Markets Section - Only for selected team */}
-      {!isLoadingProps && Object.keys(teamProps).length > 0 && (
+      {/* Momentum Timeline - Only show in replay mode */}
+      {isReplayMode && snapshots.length > 0 && (
+        <MomentumTimeline 
+          snapshots={snapshots}
+          currentSnapshotId={currentSnapshotId}
+          className="w-full max-w-5xl"
+        />
+      )}
+
+      {/* Enhanced Analytics Section */}
+      {!isReplayMode && selectedGameId && (
         <div className="w-full max-w-5xl">
-          {/* Simplified Section Header */}
           <div className="border-t border-gray-700 pt-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="text-lg font-medium text-white">
-                💰 LIVE BETTING
+                🧠 PREDICTIVE ANALYTICS
               </div>
               
-              {/* Simplified Legend */}
+              {/* Analytics Status */}
               <div className="flex items-center gap-4 text-xs">
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-400">Surging</span>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-400">Live Analysis</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span className="text-gray-400">High Confidence</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-gray-400">Player Models Active</span>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Show only the selected team's markets */}
-          {Object.entries(teamProps).map(([teamId, markets]) => {
-            const teamName = markets[0]?.team_name || `Team ${teamId}`;
-            
-            // Only show if this is the selected team or if no specific team is selected, show the first one
-            const isSelectedTeam = selectedTeamName ? teamName === selectedTeamName : teamId === Object.keys(teamProps)[0];
-            
-            if (!isSelectedTeam) return null;
-            
-            // Filter to core markets and prioritize by importance
-            const coreMarkets = markets.filter(market => 
-              ['moneyline', 'spread', 'team_total'].includes(market.market_type)
-            );
-            
-            // Sort by momentum (surging first, then high confidence)
-            const sortedMarkets = coreMarkets.sort((a, b) => {
-              if (a.surging && !b.surging) return -1;
-              if (!a.surging && b.surging) return 1;
-              if (a.market_confidence === 'high' && b.market_confidence !== 'high') return -1;
-              if (a.market_confidence !== 'high' && b.market_confidence === 'high') return 1;
-              return 0;
-            });
-            
-            const surgingCount = sortedMarkets.filter(market => market.surging).length;
-            
-            return (
-              <div key={teamId}>
-                {/* Simplified Team Header */}
-                <div className="flex items-center justify-between mb-4 p-3 bg-[#1A1F26] rounded-lg border border-gray-700">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg font-bold text-white">{teamName}</span>
-                    {surgingCount > 0 && (
-                      <span className="px-2 py-1 text-xs bg-green-600/20 text-green-400 rounded-full">
-                        🔥 {surgingCount} surging
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {sortedMarkets.length} markets
-                  </div>
-                </div>
-                
-                {/* Market Cards Grid - Show all core markets for the selected team */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {sortedMarkets.map((market) => (
-                    <TeamPropProgressCard
-                      key={`${market.team_id}-${market.market_type}`}
-                      teamName={market.team_name}
-                      marketType={market.market_type}
-                      currentOdds={market.current_odds}
-                      openingOdds={market.opening_odds}
-                      line={market.line}
-                      surging={market.surging}
-                      movementDirection={market.movement_direction}
-                      movementMagnitude={market.movement_magnitude}
-                      impliedProbability={market.implied_probability}
-                      marketConfidence={market.market_confidence}
-                    />
-                  ))}
-                </div>
+          {/* Analytics Preview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-300">Team Performance</span>
+                <span className="text-xs text-green-400">Active</span>
               </div>
-            );
-          })}
+              <div className="text-lg font-bold text-white mb-1">
+                {(teams[0]?.[1] * 100 || 0).toFixed(1)}%
+              </div>
+              <div className="text-xs text-gray-500">Current momentum score</div>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-300">Player Models</span>
+                <span className="text-xs text-blue-400">Ready</span>
+              </div>
+              <div className="text-lg font-bold text-white mb-1">15</div>
+              <div className="text-xs text-gray-500">Players with prediction data</div>
+            </div>
+            
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-300">Quarterly Forecast</span>
+                <span className="text-xs text-purple-400">Available</span>
+              </div>
+              <div className="text-lg font-bold text-white mb-1">Q2-Q4</div>
+              <div className="text-xs text-gray-500">Prediction quarters</div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-blue-900/20 border border-blue-400/30 rounded-lg">
+            <div className="text-sm text-blue-300 mb-1">💡 Enhanced Analytics Available</div>
+            <div className="text-xs text-blue-200">
+              Select a player from the sidebar to access quarterly performance predictions and enhanced statistical models.
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -24,10 +24,18 @@ interface GameOdds {
   lastUpdate: string;
 }
 
+// Environment-based API configuration for legacy momentum endpoints
+const LEGACY_API_CONFIG = {
+  development: "http://localhost:8000", // Different port for legacy API
+  production: "https://momentum-ignition-backend.onrender.com"
+};
+
+const LEGACY_BASE_URL = LEGACY_API_CONFIG[process.env.NODE_ENV as keyof typeof LEGACY_API_CONFIG] || LEGACY_API_CONFIG.development;
+
 // API utility for backend calls
 const api = {
   get: async (url: string) => {
-    const response = await fetch(`https://momentum-ignition-backend.onrender.com/api${url}`);
+    const response = await fetch(`${LEGACY_BASE_URL}/api${url}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

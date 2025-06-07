@@ -12,11 +12,15 @@ interface Team {
 }
 
 interface Player {
-  player_id: string;
-  name: string;
+  player_id: number;
+  full_name: string;
   position: string;
-  minutes_played: string;
-  team_id: string;
+  points: number;
+  rebounds: number;
+  assists: number;
+  minutes_played: number;
+  team_name: string;
+  team_abbr: string;
 }
 
 interface LiveTeamsSidebarProps {
@@ -26,7 +30,7 @@ interface LiveTeamsSidebarProps {
   error: string | null;
   selectedTeamId: string | null;
   onSelectTeam: (teamId: string, gameId: number, teamName: string) => void;
-  onSelectPlayer: (playerId: string) => void;
+  onSelectPlayer: (playerId: string, playerName?: string) => void;
   teamPlayers: Player[];
 }
 
@@ -102,12 +106,12 @@ function LiveTeamsSidebar({
                 className="text-xs text-gray-300 cursor-pointer hover:text-white hover:bg-gray-600 p-1 rounded"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectPlayer(player.player_id);
+                  onSelectPlayer(player.player_id.toString(), player.full_name);
                 }}
               >
-                <span className="font-medium">{player.name}</span> 
+                <span className="font-medium">{player.full_name}</span> 
                 <span className="text-gray-500"> ({player.position})</span>
-                <span className="text-gray-500"> • {player.minutes_played}</span>
+                <span className="text-gray-500"> • {player.minutes_played} min</span>
               </li>
             ))}
           </ul>

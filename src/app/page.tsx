@@ -158,9 +158,11 @@ export default function Home() {
                 Live Dashboard
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="px-8 py-3">
-              Explore Classic Games
-            </Button>
+            <Link href="/recent-games">
+              <Button variant="outline" size="lg" className="px-8 py-3">
+                Explore Classic Games
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
