@@ -252,7 +252,6 @@ export default function LiveGamesPage() {
                 {viewLevel === 'team' && (
                   <TeamView
                     gameId={selectedGameId}
-                    teamId={selectedTeamId}
                     teamName={selectedTeamName}
                     teamMomentum={teamMomentum}
                     isLoading={isLoadingTeamMom}
