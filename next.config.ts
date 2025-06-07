@@ -12,7 +12,8 @@ const nextConfig: NextConfig = {
   
   // Production build optimizations
   experimental: {
-    optimizeCss: true,
+    // Temporarily disabled due to critters module issues on Vercel
+    // optimizeCss: true,
   },
   
   // Asset optimization
