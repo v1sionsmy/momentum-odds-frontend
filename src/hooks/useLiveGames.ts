@@ -110,8 +110,8 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
           const featuredData = await api.getFeaturedGame();
           console.log('🎯 Featured game data:', featuredData);
           
-          if (featuredData.success && featuredData.featured_game) {
-            const featuredGame = featuredData.featured_game;
+          if (featuredData.success && featuredData.games && featuredData.games.length > 0) {
+            const featuredGame = featuredData.games[0]; // Get the first (most recent) game
             const game: Game = {
               id: featuredGame.id,
               api_game_id: featuredGame.id,

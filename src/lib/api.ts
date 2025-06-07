@@ -67,7 +67,7 @@ class NBAAnalyticsAPI {
 
   // Featured Game (most recent with complete data)
   async getFeaturedGame() {
-    return this.request('/api/games/featured');
+    return this.request('/api/v1/games/recent?limit=1');
   }
 
   // Game Players
