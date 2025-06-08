@@ -50,6 +50,8 @@ export default function LiveGamesPage() {
   };
 
   const handleTeamSelect = (teamId: string, teamName: string) => {
+    console.log('🏀 Team selected:', { teamId, teamName, gameId: selectedGameId });
+    
     setSelectedTeamId(teamId);
     setSelectedTeamName(teamName);
     setViewLevel('team');

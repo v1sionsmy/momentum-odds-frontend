@@ -67,6 +67,78 @@ function useFlasher(rate: number) {
   return isFlashing;
 }
 
+// Helper function to safely get team momentum value
+function getTeamMomentumValue(teamMomentum: TeamMomentum | null, teamName: string | null): number {
+  if (!teamMomentum?.teamMomentum || !teamName) return 0;
+  
+  // First try with the team name directly
+  if (teamMomentum.teamMomentum[teamName] !== undefined) {
+    return teamMomentum.teamMomentum[teamName];
+  }
+  
+  // Team name to ID mapping (matches the backend data structure)
+  const teamNameToId: Record<string, string> = {
+    'Boston Celtics': '1',
+    'New York Knicks': '2',
+    'Brooklyn Nets': '3',
+    'Philadelphia 76ers': '4',
+    'Toronto Raptors': '5',
+    'Chicago Bulls': '6',
+    'Cleveland Cavaliers': '7',
+    'Detroit Pistons': '8',
+    'Indiana Pacers': '9',
+    'Milwaukee Bucks': '10',
+    'Atlanta Hawks': '11',
+    'Charlotte Hornets': '12',
+    'Miami Heat': '13',
+    'Orlando Magic': '14',
+    'Washington Wizards': '15',
+    'Denver Nuggets': '16',
+    'Minnesota Timberwolves': '17',
+    'Oklahoma City Thunder': '18',
+    'Portland Trail Blazers': '19',
+    'Utah Jazz': '20',
+    'Golden State Warriors': '21',
+    'Los Angeles Clippers': '22',
+    'Los Angeles Lakers': '23',
+    'Phoenix Suns': '24',
+    'Sacramento Kings': '25',
+    'Dallas Mavericks': '26',
+    'Houston Rockets': '27',
+    'Memphis Grizzlies': '28',
+    'New Orleans Pelicans': '29',
+    'San Antonio Spurs': '30'
+  };
+  
+  // Try with team ID
+  const teamId = teamNameToId[teamName];
+  if (teamId && teamMomentum.teamMomentum[teamId] !== undefined) {
+    return teamMomentum.teamMomentum[teamId];
+  }
+  
+  // Try finding by partial name match or any available momentum value
+  const momentumEntries = Object.entries(teamMomentum.teamMomentum);
+  for (const [key, value] of momentumEntries) {
+    // If team name includes key or key includes team name (partial match)
+    if (teamName.toLowerCase().includes(key.toLowerCase()) || 
+        key.toLowerCase().includes(teamName.toLowerCase())) {
+      return value;
+    }
+  }
+  
+  // Return 0 if no match found
+  return 0;
+}
+
+// Helper function to check if team momentum data is available
+function hasTeamMomentumData(teamMomentum: TeamMomentum | null, teamName: string | null): boolean {
+  if (!teamMomentum?.teamMomentum || !teamName) return false;
+  
+  // Check if we can find momentum data using any of our methods
+  return getTeamMomentumValue(teamMomentum, teamName) !== 0 || 
+         Object.keys(teamMomentum.teamMomentum).length > 0;
+}
+
 function TeamView({
   gameId,
   teamName,
@@ -78,9 +150,9 @@ function TeamView({
 }: Omit<TeamViewProps, 'teamId'>) {
   const [showQuarterlyPrediction, setShowQuarterlyPrediction] = React.useState(false);
 
-  // Calculate flash rate for team momentum
+  // Calculate flash rate for team momentum with safe value retrieval
   const BASE_INTERVAL = 1000;
-  const teamMomentumValue = teamMomentum?.teamMomentum?.[teamName || ''] || 0;
+  const teamMomentumValue = getTeamMomentumValue(teamMomentum, teamName);
   const flashRate = teamMomentumValue > 0 ? BASE_INTERVAL / (teamMomentumValue * 0.2) : BASE_INTERVAL;
   const isFlashing = useFlasher(flashRate);
   
@@ -117,7 +189,7 @@ function TeamView({
           <div className="text-sm text-gray-400">Real-time performance tracking</div>
         </div>
 
-        {teamMomentum && teamMomentum.teamMomentum[teamName] !== undefined ? (
+        {hasTeamMomentumData(teamMomentum, teamName) ? (
           <div className="w-full max-w-4xl mx-auto">
             <PlayerHoverDetails
               playerName={teamName}
@@ -144,7 +216,18 @@ function TeamView({
           </div>
         ) : (
           <div className="text-gray-400 text-center">
-            No momentum data available for {teamName}
+            <div className="text-lg mb-2">⏳ Waiting for Momentum Data</div>
+            <div className="text-sm">
+              {teamMomentum ? 
+                `Team momentum tracking will be available once the game begins or data becomes available.` :
+                `No momentum data available for ${teamName} at this time.`
+              }
+            </div>
+            {teamMomentum && Object.keys(teamMomentum.teamMomentum || {}).length > 0 && (
+              <div className="text-xs text-gray-500 mt-2">
+                Available teams: {Object.keys(teamMomentum.teamMomentum).join(', ')}
+              </div>
+            )}
           </div>
         )}
       </div>

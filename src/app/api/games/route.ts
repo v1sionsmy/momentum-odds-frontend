@@ -51,13 +51,23 @@ const mockGames = [
     away_score: 108,
     status: "Game Finished",
     date: "2024-01-14T20:30:00Z"
+  },
+  {
+    id: 6,
+    api_game_id: 6,
+    home_team: "Indiana Pacers",
+    away_team: "Oklahoma City Thunder",
+    home_score: 0,
+    away_score: 0,
+    status: "Scheduled",
+    date: "2024-01-16T19:00:00Z"
   }
 ];
 
 export async function GET() {
   // Add some random score changes for live games to simulate real-time updates
   const dynamicGames = mockGames.map(game => {
-    if (game.status !== "Not Started" && game.status !== "Game Finished") {
+    if (game.status !== "Not Started" && game.status !== "Game Finished" && game.status !== "Scheduled") {
       // Add random points occasionally
       const homeChange = Math.random() < 0.1 ? Math.floor(Math.random() * 3) : 0;
       const awayChange = Math.random() < 0.1 ? Math.floor(Math.random() * 3) : 0;
