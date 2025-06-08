@@ -71,8 +71,13 @@ export function useGameOdds(gameId: number | null) {
       }
     };
 
+    // Initial fetch
     fetchOdds();
-    const interval = setInterval(fetchOdds, 10000); // Poll every 10 seconds for odds
+    
+    // Reduced polling frequency from 10 seconds to 60 seconds
+    // Betting odds don't change every 10 seconds, 1 minute is more appropriate
+    const interval = setInterval(fetchOdds, 60000);
+    
     return () => {
       cancelled = true;
       clearInterval(interval);

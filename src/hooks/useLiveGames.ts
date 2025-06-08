@@ -159,9 +159,10 @@ export function useAllGames() {
   return useQuery<Game[], Error>({
     queryKey: ['all-games'],
     queryFn: fetchGames,
-    staleTime: 30 * 1000, // 30 seconds
-    gcTime: 5 * 60 * 1000, // 5 minutes cache
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes - games don't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
+    refetchOnWindowFocus: false, // Stop aggressive refetching
+    refetchInterval: 60 * 1000, // Only refetch every 60 seconds if needed
   });
 }
 
@@ -169,9 +170,10 @@ export function useUpcomingGames() {
   const result = useQuery<Game[], Error>({
     queryKey: ['upcoming-games'],
     queryFn: fetchUpcomingGames,
-    staleTime: 5 * 60 * 1000, // 5 minutes - upcoming games don't change as frequently
-    gcTime: 10 * 60 * 1000, // 10 minutes cache
+    staleTime: 10 * 60 * 1000, // 10 minutes - upcoming games change even less frequently
+    gcTime: 30 * 60 * 1000, // 30 minutes cache
     refetchOnWindowFocus: false,
+    refetchInterval: 5 * 60 * 1000, // Only refetch every 5 minutes
   });
   
   console.log('🔮 useUpcomingGames result:', {

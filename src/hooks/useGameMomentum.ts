@@ -141,10 +141,11 @@ export const useGameMomentum = (gameId: number | null) => {
     // Initial fetch
     fetchMomentum(gameId);
 
-    // Set up polling every 2 seconds
+    // Reduced polling frequency from 2 seconds to 15 seconds
+    // Game momentum updates are not needed every 2 seconds
     const interval = setInterval(() => {
       fetchMomentum(gameId);
-    }, 2000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [gameId, fetchMomentum]);

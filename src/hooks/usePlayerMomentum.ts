@@ -89,8 +89,13 @@ export function usePlayerMomentum(gameId: number | null, playerId: string | null
       }
     };
 
+    // Initial fetch
     fetchPlayerMom();
-    const interval = setInterval(fetchPlayerMom, 5000);
+    
+    // Reduced polling frequency from 5 seconds to 30 seconds
+    // Player momentum doesn't need to update every few seconds
+    const interval = setInterval(fetchPlayerMom, 30000);
+    
     return () => {
       cancelled = true;
       clearInterval(interval);

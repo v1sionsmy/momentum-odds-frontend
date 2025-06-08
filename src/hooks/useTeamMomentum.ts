@@ -53,8 +53,13 @@ export function useTeamMomentum(gameId: number | null) {
       }
     };
 
+    // Initial fetch
     fetchTeamMomentum();
-    const interval = setInterval(fetchTeamMomentum, 5000);
+    
+    // Much more conservative polling - 30 seconds instead of 5
+    // For live games, momentum doesn't change every few seconds
+    const interval = setInterval(fetchTeamMomentum, 30000);
+    
     return () => {
       cancelled = true;
       clearInterval(interval);
