@@ -1,161 +1,174 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import { useGameMomentumWebSocket, GameMomentumData, FlashPattern } from "./useGameMomentumWebSocket";
 
-// API configuration
+// Fallback API configuration
 const API_CONFIG = {
   development: 'http://localhost:8000',
-  production: "https://nba-analytics-api.onrender.com" // FIXED: Use correct backend
+  production: "https://nba-analytics-api.onrender.com"
 };
 
 const LEGACY_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
 
-const api = axios.create({
-  baseURL: LEGACY_BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  }
-});
-
-export type GameMomentumData = {
-  teamMomentum: Record<string, number>;
-  playerMomentum: Record<string, number>;
-};
-
-export type FlashPattern = {
-  teamId: string;
-  color: string;
-  colorType: 'primary' | 'secondary';
-  duration: number; // how long this flash should last in ms
-}[];
-
-// Team colors with primary and secondary
-type TeamColors = {
-  primary: string;
-  secondary: string;
-};
+// Export types from WebSocket hook
+export type { GameMomentumData, FlashPattern } from "./useGameMomentumWebSocket";
 
 export const useGameMomentum = (gameId: number | null) => {
-  const [momentumData, setMomentumData] = useState<GameMomentumData | null>(null);
-  const [flashPattern, setFlashPattern] = useState<FlashPattern>([]);
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Primary WebSocket connection
+  const {
+    momentumData: wsMomentumData,
+    flashPattern: wsFlashPattern,
+    connectionStatus,
+    error: wsError,
+    isLoading: wsLoading,
+    reconnect: wsReconnect,
+    isConnected: wsConnected
+  } = useGameMomentumWebSocket(gameId);
 
-  // Function to calculate flash pattern from momentum data
-  const calculateFlashPattern = (teamMomentum: Record<string, number>): FlashPattern => {
-    const teams = Object.entries(teamMomentum);
-    if (teams.length !== 2) return [];
+  // Fallback polling states - properly typed
+  const [fallbackData, setFallbackData] = useState<GameMomentumData | null>(null);
+  const [fallbackPattern, setFallbackPattern] = useState<FlashPattern>([]);
+  const [fallbackError, setFallbackError] = useState<Error | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
-    const [team1, team2] = teams;
-    const [team1Id, team1Value] = team1;
-    const [team2Id, team2Value] = team2;
+  // Determine which data source to use
+  const shouldUseFallback = !wsConnected && connectionStatus !== 'connecting';
+  const momentumData = shouldUseFallback ? fallbackData : wsMomentumData;
+  const flashPattern = shouldUseFallback ? fallbackPattern : wsFlashPattern;
+  const error = shouldUseFallback ? fallbackError : wsError;
+  const isLoading = wsLoading && !momentumData;
 
-    // Calculate ratio - normalize to get relative weights
-    const total = team1Value + team2Value;
-    const team1Ratio = team1Value / total;
-
-    // Create pattern based on ratios
-    // Base flash duration is 500ms, we'll create a pattern for 10 flashes (5 seconds total)
-    const patternLength = 10;
-    const team1Flashes = Math.round(team1Ratio * patternLength);
-    const team2Flashes = patternLength - team1Flashes;
-
-    // Shuffle to create more natural alternating pattern
-    // Alternate between primary and secondary colors for each team
-    const shuffledPattern: FlashPattern = [];
-    let team1Count = 0;
-    let team2Count = 0;
-    let team1ColorToggle = true; // true = primary, false = secondary
-    let team2ColorToggle = true;
-    
-    for (let i = 0; i < patternLength; i++) {
-      const shouldUseTeam1 = (team1Count / team1Flashes) <= (team2Count / team2Flashes) && team1Count < team1Flashes;
-      
-      if (shouldUseTeam1) {
-        const teamColors = getTeamColors(team1Id);
-        shuffledPattern.push({
-          teamId: team1Id,
-          color: team1ColorToggle ? teamColors.primary : teamColors.secondary,
-          colorType: team1ColorToggle ? 'primary' : 'secondary',
-          duration: 500
-        });
-        team1Count++;
-        team1ColorToggle = !team1ColorToggle; // Alternate colors for this team
-      } else if (team2Count < team2Flashes) {
-        const teamColors = getTeamColors(team2Id);
-        shuffledPattern.push({
-          teamId: team2Id,
-          color: team2ColorToggle ? teamColors.primary : teamColors.secondary,
-          colorType: team2ColorToggle ? 'primary' : 'secondary',
-          duration: 500
-        });
-        team2Count++;
-        team2ColorToggle = !team2ColorToggle; // Alternate colors for this team
-      } else {
-        // Fallback to team1 if team2 is exhausted
-        const teamColors = getTeamColors(team1Id);
-        shuffledPattern.push({
-          teamId: team1Id,
-          color: team1ColorToggle ? teamColors.primary : teamColors.secondary,
-          colorType: team1ColorToggle ? 'primary' : 'secondary',
-          duration: 500
-        });
-        team1Count++;
-        team1ColorToggle = !team1ColorToggle;
-      }
-    }
-
-    return shuffledPattern;
-  };
-
-  // Fetch momentum data
-  const fetchMomentum = useCallback(async (gameId: number) => {
+  // Fallback API call
+  const fetchFallbackData = useCallback(async (gameId: number) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setFallbackError(null);
+      const response = await fetch(`${LEGACY_BASE_URL}/api/games/${gameId}/momentum`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setFallbackData(data);
       
-      const { data } = await api.get<GameMomentumData>(`/api/games/${gameId}/momentum`);
-      setMomentumData(data);
-      
-      // Calculate new flash pattern
+      // Calculate flash pattern for fallback data
       if (data.teamMomentum) {
         const pattern = calculateFlashPattern(data.teamMomentum);
-        setFlashPattern(pattern);
+        setFallbackPattern(pattern);
       }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to fetch momentum data"));
-    } finally {
-      setIsLoading(false);
+      setFallbackError(err instanceof Error ? err : new Error("Failed to fetch momentum data"));
     }
   }, []);
 
-  // Set up polling
+  // Fallback polling effect
   useEffect(() => {
-    if (!gameId) {
-      setMomentumData(null);
-      setFlashPattern([]);
+    if (!gameId || !shouldUseFallback) {
+      setUsingFallback(false);
       return;
     }
 
-    // Initial fetch
-    fetchMomentum(gameId);
+    console.log('🔄 Using fallback polling for game momentum');
+    setUsingFallback(true);
 
-    // Reduced polling frequency from 2 seconds to 15 seconds
-    // Game momentum updates are not needed every 2 seconds
+    // Initial fetch
+    fetchFallbackData(gameId);
+
+    // Poll every 30 seconds as fallback (much more conservative than before)
     const interval = setInterval(() => {
-      fetchMomentum(gameId);
-    }, 15000);
+      fetchFallbackData(gameId);
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [gameId, fetchMomentum]);
+  }, [gameId, shouldUseFallback, fetchFallbackData]);
 
   return {
     momentumData,
     flashPattern,
     error,
     isLoading,
+    connectionStatus,
+    isConnected: wsConnected,
+    usingFallback,
+    reconnect: wsReconnect
   };
+};
+
+// Team colors helper - moved up and properly typed
+type TeamColors = {
+  primary: string;
+  secondary: string;
+};
+
+const getTeamColors = (teamId: string): TeamColors => {
+  const TEAM_COLORS_BY_ID: Record<string, TeamColors> = {
+    '1': { primary: '#007A33', secondary: '#BA9653' },   // Boston Celtics
+    '2': { primary: '#006BB6', secondary: '#F58426' },   // New York Knicks
+    '9': { primary: '#FDBB30', secondary: '#002D62' },   // Indiana Pacers
+    '18': { primary: '#007AC1', secondary: '#EF3B24' },  // Oklahoma City Thunder
+    '21': { primary: '#1D428A', secondary: '#FFC72C' },  // Golden State Warriors
+    '23': { primary: '#552583', secondary: '#FDB927' },  // Los Angeles Lakers
+  };
+
+  return TEAM_COLORS_BY_ID[teamId] || { primary: '#888888', secondary: '#666666' };
+};
+
+// Flash pattern calculation for fallback
+const calculateFlashPattern = (teamMomentum: Record<string, number>): FlashPattern => {
+  const teams = Object.entries(teamMomentum);
+  if (teams.length !== 2) return [];
+
+  const [team1, team2] = teams;
+  const [team1Id, team1Value] = team1;
+  const [team2Id, team2Value] = team2;
+
+  const total = team1Value + team2Value;
+  const team1Ratio = team1Value / total;
+
+  const patternLength = 10;
+  const team1Flashes = Math.round(team1Ratio * patternLength);
+  const team2Flashes = patternLength - team1Flashes;
+
+  const shuffledPattern: FlashPattern = [];
+  let team1Count = 0;
+  let team2Count = 0;
+  let team1ColorToggle = true;
+  let team2ColorToggle = true;
+  
+  for (let i = 0; i < patternLength; i++) {
+    const shouldUseTeam1 = (team1Count / team1Flashes) <= (team2Count / team2Flashes) && team1Count < team1Flashes;
+    
+    if (shouldUseTeam1) {
+      const teamColors = getTeamColors(team1Id);
+      shuffledPattern.push({
+        teamId: team1Id,
+        color: team1ColorToggle ? teamColors.primary : teamColors.secondary,
+        colorType: team1ColorToggle ? 'primary' : 'secondary',
+        duration: 500
+      });
+      team1Count++;
+      team1ColorToggle = !team1ColorToggle;
+    } else if (team2Count < team2Flashes) {
+      const teamColors = getTeamColors(team2Id);
+      shuffledPattern.push({
+        teamId: team2Id,
+        color: team2ColorToggle ? teamColors.primary : teamColors.secondary,
+        colorType: team2ColorToggle ? 'primary' : 'secondary',
+        duration: 500
+      });
+      team2Count++;
+      team2ColorToggle = !team2ColorToggle;
+    } else {
+      const teamColors = getTeamColors(team1Id);
+      shuffledPattern.push({
+        teamId: team1Id,
+        color: team1ColorToggle ? teamColors.primary : teamColors.secondary,
+        colorType: team1ColorToggle ? 'primary' : 'secondary',
+        duration: 500
+      });
+      team1Count++;
+      team1ColorToggle = !team1ColorToggle;
+    }
+  }
+
+  return shuffledPattern;
 };
 
 // Helper function to get team ID by team name
@@ -206,58 +219,4 @@ export const getTeamColorsByName = (teamName: string): TeamColors => {
 export const getTeamColorByName = (teamName: string): string => {
   const teamId = getTeamIdByName(teamName);
   return getTeamColors(teamId).primary;
-};
-
-// Helper function to get team colors by ID
-// NBA team colors mapped by team ID with primary and secondary colors
-const getTeamColors = (teamId: string): TeamColors => {
-  const TEAM_COLORS_BY_ID: Record<string, TeamColors> = {
-    // Atlantic Division
-    '1': { primary: '#007A33', secondary: '#BA9653' },   // Boston Celtics - Green, Gold
-    '2': { primary: '#006BB6', secondary: '#F58426' },   // New York Knicks - Blue, Orange
-    '3': { primary: '#000000', secondary: '#FFFFFF' },   // Brooklyn Nets - Black, White
-    '4': { primary: '#006BB6', secondary: '#ED174C' },   // Philadelphia 76ers - Blue, Red
-    '5': { primary: '#CE1141', secondary: '#000000' },   // Toronto Raptors - Red, Black
-    
-    // Central Division
-    '6': { primary: '#CE1141', secondary: '#000000' },   // Chicago Bulls - Red, Black
-    '7': { primary: '#6F263D', secondary: '#FDBB30' },   // Cleveland Cavaliers - Wine, Gold
-    '8': { primary: '#C8102E', secondary: '#006BB6' },   // Detroit Pistons - Red, Blue
-    '9': { primary: '#FDBB30', secondary: '#002D62' },   // Indiana Pacers - Gold, Navy
-    '10': { primary: '#00471B', secondary: '#EEE1C6' },  // Milwaukee Bucks - Green, Cream
-    
-    // Southeast Division
-    '11': { primary: '#E03A3E', secondary: '#C1D32F' },  // Atlanta Hawks - Red, Volt Green
-    '12': { primary: '#1D1160', secondary: '#00788C' },  // Charlotte Hornets - Purple, Teal
-    '13': { primary: '#98002E', secondary: '#F9A01B' },  // Miami Heat - Red, Orange
-    '14': { primary: '#0077C0', secondary: '#C4CED4' },  // Orlando Magic - Blue, Silver
-    '15': { primary: '#002B5C', secondary: '#E31837' },  // Washington Wizards - Navy, Red
-    
-    // Northwest Division
-    '16': { primary: '#0E2240', secondary: '#FEC524' },  // Denver Nuggets - Navy, Gold
-    '17': { primary: '#0C2340', secondary: '#78BE20' },  // Minnesota Timberwolves - Navy, Green
-    '18': { primary: '#007AC1', secondary: '#EF3B24' },  // Oklahoma City Thunder - Blue, Orange
-    '19': { primary: '#E03A3E', secondary: '#000000' },  // Portland Trail Blazers - Red, Black
-    '20': { primary: '#002B5C', secondary: '#00471B' },  // Utah Jazz - Navy, Green
-    
-    // Pacific Division
-    '21': { primary: '#1D428A', secondary: '#FFC72C' },  // Golden State Warriors - Blue, Gold
-    '22': { primary: '#C8102E', secondary: '#1D428A' },  // Los Angeles Clippers - Red, Blue
-    '23': { primary: '#552583', secondary: '#FDB927' },  // Los Angeles Lakers - Purple, Gold
-    '24': { primary: '#1D1160', secondary: '#E56020' },  // Phoenix Suns - Purple, Orange
-    '25': { primary: '#5A2D81', secondary: '#63727A' },  // Sacramento Kings - Purple, Gray
-    
-    // Southwest Division
-    '26': { primary: '#00538C', secondary: '#002F5F' },  // Dallas Mavericks - Blue, Navy
-    '27': { primary: '#CE1141', secondary: '#000000' },  // Houston Rockets - Red, Black
-    '28': { primary: '#5D76A9', secondary: '#12173F' },  // Memphis Grizzlies - Blue, Navy
-    '29': { primary: '#0C2340', secondary: '#C8102E' },  // New Orleans Pelicans - Navy, Red
-    '30': { primary: '#C4CED4', secondary: '#000000' },  // San Antonio Spurs - Silver, Black
-    
-    // Alternative team IDs that might be used
-    '38': { primary: '#1D428A', secondary: '#FFC72C' },  // Golden State Warriors (alt ID)
-    '40': { primary: '#1D1160', secondary: '#E56020' },  // Phoenix Suns (alt ID)
-  };
-
-  return TEAM_COLORS_BY_ID[teamId] || { primary: '#888888', secondary: '#666666' }; // Default gray for unknown teams
 }; 
