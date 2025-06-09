@@ -207,48 +207,31 @@ const TeamView: React.FC<TeamViewProps> = ({
           </div>
               
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
-                  {teamName}
-                </h1>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 rounded-full border border-blue-500/30">
-                    <Users className="w-4 h-4 text-blue-400" />
-                    <span className="text-blue-400 font-medium">{teamPlayers.length} Players</span>
-          </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                    {teamName}
+                  </h1>
+                  <div className="text-gray-400 text-lg mb-3">
+                    Team Analysis & Player Performance
+                  </div>
                   
-                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${
-                    isTeamPulsing 
-                      ? 'bg-green-500/20 border-green-500/30 animate-pulse' 
-                      : 'bg-purple-500/20 border-purple-500/30'
-                  }`}>
-                    <TrendingUp className={`w-4 h-4 ${isTeamPulsing ? 'text-green-400' : 'text-purple-400'}`} />
-                    <span className={`font-medium ${isTeamPulsing ? 'text-green-400' : 'text-purple-400'}`}>
-                      {isTeamPulsing ? 'HIGH MOMENTUM' : 'NORMAL'}
-                    </span>
-      </div>
-
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-orange-500/20 rounded-full border border-orange-500/30">
-                    <BarChart3 className="w-4 h-4 text-orange-400" />
-                    <span className="text-orange-400 font-medium">Game #{gameId}</span>
+                  {/* Momentum Score Display */}
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 px-4 py-2 bg-gray-700/50 rounded-xl border border-gray-600/30">
+                      <Activity className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-gray-300">Momentum Score:</span>
+                      <span className={`font-bold text-lg ${
+                        momentumScore > 0.7 ? 'text-green-400' : 
+                        momentumScore > 0.4 ? 'text-yellow-400' : 'text-red-400'
+                      }`}>
+                        {(momentumScore * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-500 max-w-xs">
+                      Higher scores indicate stronger team momentum based on recent plays
+                    </div>
                   </div>
                 </div>
-          </div>
-        </div>
-
-            {/* Momentum Score Display */}
-            <div className="text-right">
-              <div className="text-6xl font-bold mb-2" style={{ color: colors.primary }}>
-                {Math.round(momentumScore * 100)}
-              </div>
-              <div className="text-gray-400 font-medium mb-2">Momentum Score</div>
-              <div className="w-32 bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-1000 ${isTeamPulsing ? 'animate-pulse' : ''}`}
-                  style={{
-                    width: `${momentumScore * 100}%`,
-                    background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`
-                  }}
-                ></div>
               </div>
             </div>
           </div>

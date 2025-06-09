@@ -1,27 +1,51 @@
-import * as React from "react";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { cn } from "@/lib/utils";
+import React, { useState } from 'react';
+import { HelpCircle } from 'lucide-react';
 
-const TooltipProvider = TooltipPrimitive.Provider;
+interface TooltipProps {
+  content: string;
+  children?: React.ReactNode;
+  position?: 'top' | 'bottom' | 'left' | 'right';
+}
 
-const Tooltip = TooltipPrimitive.Root;
+export const Tooltip: React.FC<TooltipProps> = ({ 
+  content, 
+  children, 
+  position = 'top' 
+}) => {
+  const [isVisible, setIsVisible] = useState(false);
 
-const TooltipTrigger = TooltipPrimitive.Trigger;
+  const positionClasses = {
+    top: 'bottom-full left-1/2 transform -translate-x-1/2 mb-2',
+    bottom: 'top-full left-1/2 transform -translate-x-1/2 mt-2',
+    left: 'right-full top-1/2 transform -translate-y-1/2 mr-2',
+    right: 'left-full top-1/2 transform -translate-y-1/2 ml-2'
+  };
 
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Content
-    ref={ref}
-    sideOffset={sideOffset}
-    className={cn(
-      "z-50 overflow-hidden rounded-md border bg-[#0F1318] px-3 py-1.5 text-sm text-white shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    )}
-    {...props}
-  />
-));
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
-
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }; 
+  return (
+    <div className="relative inline-block">
+      <div
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        className="cursor-help"
+      >
+        {children || <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-300" />}
+      </div>
+      
+      {isVisible && (
+        <div className={`absolute z-50 ${positionClasses[position]}`}>
+          <div className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 shadow-lg border border-gray-600 max-w-xs">
+            {content}
+            <div 
+              className={`absolute w-2 h-2 bg-gray-800 border-gray-600 transform rotate-45 ${
+                position === 'top' ? 'top-full left-1/2 -translate-x-1/2 -mt-1 border-b border-r' :
+                position === 'bottom' ? 'bottom-full left-1/2 -translate-x-1/2 -mb-1 border-t border-l' :
+                position === 'left' ? 'left-full top-1/2 -translate-y-1/2 -ml-1 border-t border-r' :
+                'right-full top-1/2 -translate-y-1/2 -mr-1 border-b border-l'
+              }`}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}; 

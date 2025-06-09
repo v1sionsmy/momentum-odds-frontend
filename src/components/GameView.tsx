@@ -113,7 +113,8 @@ const GameView: React.FC<GameViewProps> = ({
                 </div>
               </div>
               <div className="text-gray-400">
-                <div className="text-sm font-medium">Advanced momentum tracking & ML predictions</div>
+                <div className="text-sm font-medium">Real-time momentum tracking & ML predictions</div>
+                <div className="text-xs mt-1 opacity-80">Click a team below to see detailed player analytics</div>
               </div>
             </div>
           </div>

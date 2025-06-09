@@ -39,9 +39,15 @@ export const MomentumBox: React.FC<MomentumBoxProps> = ({ selectedGameId }) => {
     if (!selectedGameId) {
       return (
         <div className="text-center">
-          <div className="text-xl font-bold text-red-500 mb-4">Game needs to be selected for box to flash</div>
+          <div className="text-xl font-bold text-red-500 mb-4">Select a Game to See Live Momentum</div>
           <div className="text-gray-400 text-sm max-w-md mx-auto">
-            Select a live game from the sidebar to see momentum flashing. Colors flash based on team momentum - more flashes = more momentum.
+            Choose a live game from the sidebar to see real-time momentum visualization. 
+            The box will flash with team colors - faster flashing indicates higher momentum shifts.
+          </div>
+          <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50">
+            <div className="text-xs text-gray-500">
+              <strong>Color Guide:</strong> Each team has unique colors that flash based on their current momentum strength
+            </div>
           </div>
         </div>
       );
