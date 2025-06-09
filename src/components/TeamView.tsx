@@ -3,13 +3,9 @@ import React from 'react';
 import { TrendingUp, Users, Activity, Zap, Star, Target, BarChart3, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface TeamMomentumData {
-  team_id: number;
-  team_name: string;
-  momentum_score: number;
-  momentum_trend: 'up' | 'down' | 'stable';
-  time_period: string;
-  factors: string[];
+interface TeamMomentum {
+  teamMomentum: Record<string, number>;
+  playerMomentum?: Record<string, number>;
 }
 
 interface Player {
@@ -28,7 +24,7 @@ interface Player {
 interface TeamViewProps {
   gameId: number;
   teamName: string | null;
-  teamMomentum: TeamMomentumData | null;
+  teamMomentum: TeamMomentum | null;
   isLoading: boolean;
   error: string | null;
   teamPlayers?: Player[];
@@ -72,6 +68,15 @@ const TeamView: React.FC<TeamViewProps> = ({
   // Helper to get player name
   const getPlayerName = (player: Player) => {
     return player.name || player.full_name || `Player ${player.player_id}`;
+  };
+
+  // Get team momentum score
+  const getTeamMomentumScore = (teamName: string | null): number => {
+    if (!teamMomentum?.teamMomentum || !teamName) return 0.65;
+    
+    return teamMomentum.teamMomentum[teamName] || 
+           teamMomentum.teamMomentum[teamName.toLowerCase()] ||
+           Object.values(teamMomentum.teamMomentum)[0] || 0.65;
   };
 
   // Get ML pulse style for stats
@@ -169,7 +174,7 @@ const TeamView: React.FC<TeamViewProps> = ({
 
   const colors = getTeamColor(teamName);
   const isTeamPulsing = momentumPulse[`team-${teamName}`];
-  const momentumScore = teamMomentum?.momentum_score || 0.65;
+  const momentumScore = getTeamMomentumScore(teamName);
 
   return (
     <div className="space-y-8">
