@@ -83,6 +83,11 @@ class NBAAnalyticsAPI {
     return this.request('/api/v1/games/recent?limit=1');
   }
 
+  // Live Games - GET ACTUAL LIVE GAMES FROM BACKEND
+  async getLiveGames() {
+    return this.request('/api/v1/games/live');
+  }
+
   // Game Players
   async getGamePlayers(gameId: number, minMinutes = 15) {
     return this.request(`/api/v1/players/game/${gameId}?min_minutes=${minMinutes}`);

@@ -55,27 +55,8 @@ const fetchGames = async (): Promise<Game[]> => {
     
     return [];
   } catch (error) {
-    console.error('❌ Failed to fetch games, using fallback data:', error);
-    
-    // Return fallback mock data so the dashboard can still function
-    const mockGames: Game[] = [
-      {
-        id: 2716,
-        api_game_id: 2716,
-        home_team: "Oklahoma City Thunder",
-        away_team: "Indiana Pacers",
-        home_abbr: "OKC",
-        away_abbr: "IND",
-        home_score: 126,
-        away_score: 108,
-        status: "FINAL",
-        date: "2024-12-28T00:00:00Z",
-        start_time: "2024-12-28T00:00:00Z"
-      }
-    ];
-    
-    console.log('🎮 Using fallback mock games:', mockGames);
-    return mockGames;
+    console.error('❌ Failed to fetch games from backend:', error);
+    throw error; // Don't fallback to mock data - let the app handle the error
   }
 };
 
@@ -119,89 +100,47 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
       });
       
       console.log('📅 Filtered upcoming games:', upcomingGames);
-      
-      // If no upcoming games found, create a mock one for testing
-      if (upcomingGames.length === 0) {
-        console.log('📅 No upcoming games found, getting featured game instead...');
-        
-        try {
-          // Get the featured game from the API instead of creating mock data
-          const featuredData = await api.getFeaturedGame();
-          console.log('🎯 Featured game data:', featuredData);
-          
-          if (featuredData.success && featuredData.games && featuredData.games.length > 0) {
-            const featuredGame = featuredData.games[0]; // Get the first (most recent) game
-            const game: Game = {
-              id: featuredGame.id,
-              api_game_id: featuredGame.id,
-              home_team: featuredGame.home_team,
-              away_team: featuredGame.away_team,
-              home_abbr: featuredGame.home_abbr,
-              away_abbr: featuredGame.away_abbr,
-              home_score: featuredGame.home_score,
-              away_score: featuredGame.away_score,
-              status: "FINAL",
-              date: featuredGame.start_time,
-              start_time: featuredGame.start_time
-            };
-            
-            console.log('🎯 Using featured game instead of mock:', game);
-            return [game];
-          }
-        } catch (error) {
-          console.error('❌ Failed to get featured game:', error);
-        }
-        
-        // Fallback: if featured game fails, use the most recent completed game
-        if (allTransformed.length > 0) {
-          console.log('📅 Using most recent completed game as fallback...');
-          const mostRecent = allTransformed[0]; // Games are already sorted by date DESC
-          return [mostRecent];
-        }
-        
-        // Last resort: return mock upcoming game
-        console.log('📅 No games available, using mock upcoming game');
-        const mockUpcomingGame: Game = {
-          id: 2722,
-          api_game_id: 2722,
-          home_team: "Oklahoma City Thunder",
-          away_team: "Indiana Pacers",
-          home_abbr: "OKC",
-          away_abbr: "IND",
-          home_score: 0,
-          away_score: 0,
-          status: "SCHEDULED",
-          date: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-          start_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-        };
-        
-        return [mockUpcomingGame];
-      }
-      
       return upcomingGames;
     }
     
     return [];
   } catch (error) {
-    console.error('❌ Failed to fetch upcoming games, using fallback data:', error);
+    console.error('❌ Failed to fetch upcoming games from backend:', error);
+    throw error; // No mock data fallback
+  }
+};
+
+const fetchLiveGames = async (): Promise<Game[]> => {
+  try {
+    console.log('🔴 Fetching LIVE games from backend...');
+    const data = await api.getLiveGames();
+    console.log('🔴 Live Games API Response:', data);
     
-    // Return mock upcoming game so the dashboard can still function
-    const mockUpcomingGame: Game = {
-      id: 2722,
-      api_game_id: 2722,
-      home_team: "Oklahoma City Thunder",
-      away_team: "Indiana Pacers",
-      home_abbr: "OKC",
-      away_abbr: "IND",
-      home_score: 0,
-      away_score: 0,
-      status: "SCHEDULED",
-      date: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-      start_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-    };
+    if (data.success && Array.isArray(data.live_games)) {
+      // Transform live games response
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const liveGames = data.live_games.map((game: any) => ({
+        id: game.game_id,
+        api_game_id: game.game_id,
+        home_team: game.home_team,
+        away_team: game.away_team,
+        home_abbr: game.home_team?.substring(0, 3).toUpperCase(),
+        away_abbr: game.away_team?.substring(0, 3).toUpperCase(),
+        home_score: game.home_score || 0,
+        away_score: game.away_score || 0,
+        status: "LIVE",
+        date: game.last_momentum_update || new Date().toISOString(),
+        start_time: game.last_momentum_update || new Date().toISOString()
+      }));
+      
+      console.log('🔴 Transformed Live Games:', liveGames);
+      return liveGames;
+    }
     
-    console.log('📅 Using fallback mock upcoming game:', mockUpcomingGame);
-    return [mockUpcomingGame];
+    return [];
+  } catch (error) {
+    console.error('❌ Failed to fetch live games from backend:', error);
+    throw error; // No fallback - let the app handle errors properly
   }
 };
 
@@ -237,27 +176,14 @@ export function useUpcomingGames() {
 }
 
 export function useLiveGames() {
-  const { data, isLoading, error } = useAllGames();
-  
-  // Filter for games with "LIVE" status or games currently in progress
-  const filtered = (Array.isArray(data) ? data : []).filter((g) => {
-    // A game is considered "live" if it has started but not finished
-    // and has some score progression
-    const hasStarted = g.home_score > 0 || g.away_score > 0;
-    const gameDate = new Date(g.start_time);
-    const now = new Date();
-    const isWithinGameWindow = Math.abs(now.getTime() - gameDate.getTime()) < 4 * 60 * 60 * 1000; // Within 4 hours
-    
-    const isLive = g.status === "LIVE" || (hasStarted && isWithinGameWindow && g.status !== "FINAL");
-    
-    return isLive;
+  return useQuery<Game[], Error>({
+    queryKey: ['live-games'],
+    queryFn: fetchLiveGames,
+    staleTime: 30 * 1000, // 30 seconds - live games change frequently
+    gcTime: 2 * 60 * 1000, // 2 minutes cache
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds for live data
   });
-  
-  return {
-    data: filtered,
-    isLoading,
-    error,
-  };
 }
 
 export function useLiveTeams() {
