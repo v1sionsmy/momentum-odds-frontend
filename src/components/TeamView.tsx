@@ -3,7 +3,7 @@ import React from 'react';
 import { TrendingUp, Users, Activity, Zap, Star, Target, BarChart3, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface TeamMomentum {
+interface TeamMomentumData {
   team_id: number;
   team_name: string;
   momentum_score: number;
@@ -28,7 +28,7 @@ interface Player {
 interface TeamViewProps {
   gameId: number;
   teamName: string | null;
-  teamMomentum: TeamMomentum | null;
+  teamMomentum: TeamMomentumData | null;
   isLoading: boolean;
   error: string | null;
   teamPlayers?: Player[];
