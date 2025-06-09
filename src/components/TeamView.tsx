@@ -1,11 +1,7 @@
 "use client";
 import React from 'react';
-import { TrendingUp, Users, Activity, Zap, BarChart3, AlertCircle } from 'lucide-react';
+import { TrendingUp, Users, Activity, Zap, Star, Target, BarChart3, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PlayerHoverDetails } from "@/components/ui/player-hover-details";
-import { MomentumBar } from "@/components/ui/momentum-bar";
-import { getMomentumExplanation, getMomentumActivity } from "@/hooks/useMomentumHelpers";
-import EnhancedQuarterlyPrediction from "@/components/EnhancedQuarterlyPrediction";
 
 interface TeamMomentum {
   team_id: number;
@@ -165,7 +161,7 @@ const TeamView: React.FC<TeamViewProps> = ({
 
   // Calculate flash rate for team momentum with safe value retrieval
   const BASE_INTERVAL = 1000;
-  const teamMomentumValue = getTeamMomentumValue(teamMomentum, teamName);
+  const teamMomentumValue = teamMomentum?.momentum_score || 0.65; // Use momentum_score from interface
   const flashRate = teamMomentumValue > 0 ? BASE_INTERVAL / (teamMomentumValue * 0.2) : BASE_INTERVAL;
   const isFlashing = useFlasher(flashRate);
   

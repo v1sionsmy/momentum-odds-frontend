@@ -188,7 +188,7 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
 
                   {/* Teams Display */}
                   <div className="space-y-3">
-                    {teams.slice(0, 2).map((team, index) => {
+                    {teams.slice(0, 2).map((team) => {
                       const colors = getTeamColor(team.name);
                       const isPulsing = momentumPulse[`team-${team.id}`];
                       
