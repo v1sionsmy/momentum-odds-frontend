@@ -38,20 +38,6 @@ interface TeamViewProps {
   teamColors: Record<string, { primary: string; secondary: string; glow: string }>;
 }
 
-function useFlasher(rate: number) {
-  const [isFlashing, setIsFlashing] = React.useState(false);
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setIsFlashing(prev => !prev);
-    }, rate);
-
-    return () => clearInterval(interval);
-  }, [rate]);
-
-  return isFlashing;
-}
-
 // Note: Commenting out helper function due to type conflicts between different TeamMomentum interfaces
 // This will be resolved when the momentum data structure is unified
 /* 
@@ -73,11 +59,6 @@ const TeamView: React.FC<TeamViewProps> = ({
   mlPulse,
   teamColors
 }) => {
-  // Calculate flash rate for team momentum with safe value retrieval
-  const BASE_INTERVAL = 1000;
-  const teamMomentumValue = teamMomentum?.momentum_score || 0.65; // Use momentum_score from interface
-  const flashRate = teamMomentumValue > 0 ? BASE_INTERVAL / (teamMomentumValue * 0.2) : BASE_INTERVAL;
-  
   // Get team colors
   const getTeamColor = (name: string) => {
     return teamColors[name] || teamColors.Default;
