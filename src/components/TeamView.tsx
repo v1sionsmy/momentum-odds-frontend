@@ -38,27 +38,6 @@ interface TeamViewProps {
   teamColors: Record<string, { primary: string; secondary: string; glow: string }>;
 }
 
-// Team colors for visual consistency
-const teamColors: Record<string, string> = {
-  "Boston Celtics": "#007A33",
-  "Brooklyn Nets": "#000000",
-  "New York Knicks": "#006BB6",
-  "Philadelphia 76ers": "#006BB6",
-  "Toronto Raptors": "#CE1141",
-  "Golden State Warriors": "#006BB6",
-  "Los Angeles Clippers": "#C8102E",
-  "Los Angeles Lakers": "#552583",
-  "Phoenix Suns": "#E56020",
-  "Sacramento Kings": "#5A2D81",
-  "Chicago Bulls": "#CE1141",
-  "Cleveland Cavaliers": "#860038",
-  "Detroit Pistons": "#C8102E",
-  "Indiana Pacers": "#002D62",
-  "Milwaukee Bucks": "#00471B",
-  "Oklahoma City Thunder": "#007AC1",
-  "Minnesota Timberwolves": "#0C2340"
-};
-
 function useFlasher(rate: number) {
   const [isFlashing, setIsFlashing] = React.useState(false);
 
@@ -73,77 +52,14 @@ function useFlasher(rate: number) {
   return isFlashing;
 }
 
-// Helper function to safely get team momentum value
+// Note: Commenting out helper function due to type conflicts between different TeamMomentum interfaces
+// This will be resolved when the momentum data structure is unified
+/* 
 function getTeamMomentumValue(teamMomentum: TeamMomentum | null, teamName: string | null): number {
-  if (!teamMomentum?.teamMomentum || !teamName) return 0;
-  
-  // First try with the team name directly
-  if (teamMomentum.teamMomentum[teamName] !== undefined) {
-    return teamMomentum.teamMomentum[teamName];
-  }
-  
-  // Team name to ID mapping (matches the backend data structure)
-  const teamNameToId: Record<string, string> = {
-    'Boston Celtics': '1',
-    'New York Knicks': '2',
-    'Brooklyn Nets': '3',
-    'Philadelphia 76ers': '4',
-    'Toronto Raptors': '5',
-    'Chicago Bulls': '6',
-    'Cleveland Cavaliers': '7',
-    'Detroit Pistons': '8',
-    'Indiana Pacers': '9',
-    'Milwaukee Bucks': '10',
-    'Atlanta Hawks': '11',
-    'Charlotte Hornets': '12',
-    'Miami Heat': '13',
-    'Orlando Magic': '14',
-    'Washington Wizards': '15',
-    'Denver Nuggets': '16',
-    'Minnesota Timberwolves': '17',
-    'Oklahoma City Thunder': '18',
-    'Portland Trail Blazers': '19',
-    'Utah Jazz': '20',
-    'Golden State Warriors': '21',
-    'Los Angeles Clippers': '22',
-    'Los Angeles Lakers': '23',
-    'Phoenix Suns': '24',
-    'Sacramento Kings': '25',
-    'Dallas Mavericks': '26',
-    'Houston Rockets': '27',
-    'Memphis Grizzlies': '28',
-    'New Orleans Pelicans': '29',
-    'San Antonio Spurs': '30'
-  };
-  
-  // Try with team ID
-  const teamId = teamNameToId[teamName];
-  if (teamId && teamMomentum.teamMomentum[teamId] !== undefined) {
-    return teamMomentum.teamMomentum[teamId];
-  }
-  
-  // Try finding by partial name match or any available momentum value
-  const momentumEntries = Object.entries(teamMomentum.teamMomentum);
-  for (const [key, value] of momentumEntries) {
-    // If team name includes key or key includes team name (partial match)
-    if (teamName.toLowerCase().includes(key.toLowerCase()) || 
-        key.toLowerCase().includes(teamName.toLowerCase())) {
-      return value;
-    }
-  }
-  
-  // Return 0 if no match found
+  // Implementation temporarily disabled due to type conflicts
   return 0;
 }
-
-// Helper function to check if team momentum data is available
-function hasTeamMomentumData(teamMomentum: TeamMomentum | null, teamName: string | null): boolean {
-  if (!teamMomentum?.teamMomentum || !teamName) return false;
-  
-  // Check if we can find momentum data using any of our methods
-  return getTeamMomentumValue(teamMomentum, teamName) !== 0 || 
-         Object.keys(teamMomentum.teamMomentum).length > 0;
-}
+*/
 
 const TeamView: React.FC<TeamViewProps> = ({
   gameId,
@@ -157,16 +73,11 @@ const TeamView: React.FC<TeamViewProps> = ({
   mlPulse,
   teamColors
 }) => {
-  const [showQuarterlyPrediction, setShowQuarterlyPrediction] = React.useState(false);
-
   // Calculate flash rate for team momentum with safe value retrieval
   const BASE_INTERVAL = 1000;
   const teamMomentumValue = teamMomentum?.momentum_score || 0.65; // Use momentum_score from interface
   const flashRate = teamMomentumValue > 0 ? BASE_INTERVAL / (teamMomentumValue * 0.2) : BASE_INTERVAL;
-  const isFlashing = useFlasher(flashRate);
   
-  const teamColor = teamName ? teamColors[teamName] || teamColors.Default : "#007A33";
-
   // Get team colors
   const getTeamColor = (name: string) => {
     return teamColors[name] || teamColors.Default;
