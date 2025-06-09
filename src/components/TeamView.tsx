@@ -142,7 +142,7 @@ const TeamView: React.FC<TeamViewProps> = ({
       </div>
     );
   }
-
+  
   if (error) {
     return (
       <div className="relative">
@@ -160,9 +160,9 @@ const TeamView: React.FC<TeamViewProps> = ({
       </div>
     );
   }
-
+  
   if (!teamName) {
-    return (
+  return (
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-gray-600/10 to-gray-700/10 rounded-3xl blur-3xl"></div>
         <div className="relative bg-gradient-to-br from-gray-900/80 to-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 text-center">
@@ -204,7 +204,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                 }}
               >
                 {getTeamInitials(teamName)}
-              </div>
+          </div>
               
               <div>
                 <h1 className="text-4xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
@@ -214,7 +214,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                   <div className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 rounded-full border border-blue-500/30">
                     <Users className="w-4 h-4 text-blue-400" />
                     <span className="text-blue-400 font-medium">{teamPlayers.length} Players</span>
-                  </div>
+          </div>
                   
                   <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${
                     isTeamPulsing 
@@ -225,15 +225,15 @@ const TeamView: React.FC<TeamViewProps> = ({
                     <span className={`font-medium ${isTeamPulsing ? 'text-green-400' : 'text-purple-400'}`}>
                       {isTeamPulsing ? 'HIGH MOMENTUM' : 'NORMAL'}
                     </span>
-                  </div>
+      </div>
 
                   <div className="flex items-center space-x-2 px-4 py-2 bg-orange-500/20 rounded-full border border-orange-500/30">
                     <BarChart3 className="w-4 h-4 text-orange-400" />
                     <span className="text-orange-400 font-medium">Game #{gameId}</span>
                   </div>
                 </div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Momentum Score Display */}
             <div className="text-right">
@@ -262,7 +262,7 @@ const TeamView: React.FC<TeamViewProps> = ({
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600/30 to-purple-600/30 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-blue-400" />
             </div>
-            <div>
+          <div>
               <h2 className="text-2xl font-bold text-white">Team Roster</h2>
               <p className="text-gray-400">Player momentum and ML predictions</p>
             </div>
@@ -280,7 +280,7 @@ const TeamView: React.FC<TeamViewProps> = ({
             const isPulsing = momentumPulse[`player-${player.player_id}`];
             
             return (
-              <div 
+              <div
                 key={player.player_id}
                 className="relative group cursor-pointer"
                 onClick={() => onPlayerSelect(player.player_id.toString(), getPlayerName(player))}
@@ -346,7 +346,7 @@ const TeamView: React.FC<TeamViewProps> = ({
                             </div>
                             <div className="text-xs text-gray-400 font-medium">
                               {label}
-                            </div>
+                  </div>
                             {pulse?.active && (
                               <div className={`mt-1 flex items-center justify-center space-x-1`}>
                                 <Star className={`w-3 h-3 ${
@@ -358,30 +358,30 @@ const TeamView: React.FC<TeamViewProps> = ({
                                   stat === 'reb' ? 'text-green-400' : 'text-blue-400'
                                 }`}>
                                   ML+
-                                </div>
+                  </div>
                               </div>
                             )}
                           </div>
                         );
                       })}
-                    </div>
-
+                </div>
+                
                     {/* Player Actions */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-700/30">
                       <div className="flex space-x-2">
                         <div className="px-3 py-1 bg-purple-500/20 rounded-full border border-purple-500/30">
                           <span className="text-purple-400 text-xs font-medium">DETAILED</span>
-                        </div>
+                  </div>
                         {isPulsing && (
                           <div className="px-3 py-1 bg-orange-500/20 rounded-full border border-orange-500/30 animate-pulse">
                             <span className="text-orange-400 text-xs font-medium">MOMENTUM</span>
-                          </div>
+                  </div>
                         )}
-                      </div>
+                  </div>
                       
                       <Target className="w-4 h-4 text-gray-400 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-300" />
-                    </div>
-
+                </div>
+                
                     {/* Enhanced hover effects */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-purple-600/0 to-blue-600/0 group-hover:from-blue-600/5 group-hover:via-purple-600/5 group-hover:to-blue-600/5 rounded-2xl transition-all duration-500 pointer-events-none"></div>
                   </div>
@@ -389,7 +389,7 @@ const TeamView: React.FC<TeamViewProps> = ({
               </div>
             );
           })}
-        </div>
+          </div>
 
         {teamPlayers.length === 0 && (
           <div className="text-center py-12">

@@ -121,7 +121,7 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
           liveTeams.find(liveTeam => liveTeam.id === team.id)
         )
       }));
-
+    
     return (
       <div className="space-y-4">
         {games.map(({ gameId, teams, isLive }) => {
@@ -129,8 +129,8 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
           const gameHasMomentum = teams.some(team => momentumPulse[`team-${team.id}`]);
           
           return (
-            <div 
-              key={gameId} 
+                <div
+                  key={gameId}
               className="relative group cursor-pointer"
               onClick={() => onGameSelect(gameId)}
             >
@@ -185,7 +185,7 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                       </div>
                     )}
                   </div>
-
+                  
                   {/* Teams Display */}
                   <div className="space-y-3">
                     {teams.slice(0, 2).map((team) => {
@@ -228,8 +228,8 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                               {team.score !== undefined && (
                                 <div className="text-lg font-bold text-white">
                                   {team.score}
-                                </div>
-                              )}
+                    </div>
+                  )}
                             </div>
                           </div>
 
@@ -252,14 +252,14 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                     <div className="flex space-x-2">
                       <div className="px-2 py-1 bg-blue-500/20 rounded-lg border border-blue-500/30">
                         <span className="text-blue-400 text-xs font-medium">ANALYTICS</span>
-                      </div>
+                </div>
                       {gameHasMomentum && (
                         <div className="px-2 py-1 bg-green-500/20 rounded-lg border border-green-500/30 animate-pulse">
                           <span className="text-green-400 text-xs font-medium">MOMENTUM</span>
-                        </div>
-                      )}
-                    </div>
-                    
+          </div>
+        )}
+                  </div>
+                  
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
                 </div>
@@ -274,7 +274,7 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
   if (viewLevel === 'team' && selectedGameId) {
     const allTeams = [...liveTeams, ...upcomingTeams];
     const gameTeams = allTeams.filter(team => team.gameId === selectedGameId);
-
+    
     return (
       <div className="space-y-4">
         {gameTeams.map(team => {
@@ -283,11 +283,11 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
           const isPulsing = momentumPulse[`team-${team.id}`];
           
           return (
-            <div 
-              key={team.id}
+          <div
+            key={team.id}
               className="relative group cursor-pointer"
-              onClick={() => onTeamSelect(team.id, team.name)}
-            >
+            onClick={() => onTeamSelect(team.id, team.name)}
+          >
               {/* Team momentum glow */}
               {isPulsing && (
                 <div 
@@ -332,7 +332,7 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                     
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300">
-                        {team.name}
+                  {team.name}
                       </h3>
                       <div className="flex items-center space-x-2 mt-1">
                         <div 
@@ -367,8 +367,8 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                         ></div>
                         <span className={`text-xs font-bold ${isPulsing ? 'text-green-400' : 'text-gray-400'}`}>
                           {isPulsing ? 'HIGH' : 'NORMAL'}
-                        </span>
-                      </div>
+                </span>
+              </div>
                     </div>
                     
                     <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
@@ -381,21 +381,21 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                             : 'linear-gradient(90deg, #6B7280, #9CA3AF)'
                         }}
                       ></div>
-                    </div>
-                  </div>
-
+              </div>
+            </div>
+            
                   {/* Action Indicators */}
                   <div className="flex items-center justify-between">
                     <div className="flex space-x-2">
                       <div className="px-3 py-1 bg-blue-500/20 rounded-full border border-blue-500/30">
                         <span className="text-blue-400 text-xs font-medium">ROSTER</span>
-                      </div>
+              </div>
                       {isPulsing && (
                         <div className="px-3 py-1 bg-green-500/20 rounded-full border border-green-500/30 animate-pulse">
                           <span className="text-green-400 text-xs font-medium">MOMENTUM</span>
-                        </div>
-                      )}
-                    </div>
+              </div>
+            )}
+          </div>
                     
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
@@ -409,15 +409,15 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
   }
 
   if (viewLevel === 'player' && teamPlayers) {
-    return (
+      return (
       <div className="space-y-4">
         {teamPlayers.map(player => {
           const isSelected = selectedPlayerId === player.player_id.toString();
           const isPulsing = momentumPulse[`player-${player.player_id}`];
-          
-          return (
-            <div 
-              key={player.player_id}
+
+    return (
+          <div
+            key={player.player_id}
               className="relative group cursor-pointer"
               onClick={() => onPlayerSelect(player.player_id.toString(), getPlayerName(player))}
             >
@@ -509,8 +509,8 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
                           <span className="text-orange-400 text-xs font-medium">MOMENTUM</span>
                         </div>
                       )}
-                    </div>
-                    
+            </div>
+            
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
                 </div>

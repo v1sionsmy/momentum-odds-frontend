@@ -60,8 +60,8 @@ const fetchGames = async (): Promise<Game[]> => {
     // Return fallback mock data so the dashboard can still function
     const mockGames: Game[] = [
       {
-        id: 2721,
-        api_game_id: 2721,
+        id: 2716,
+        api_game_id: 2716,
         home_team: "Oklahoma City Thunder",
         away_team: "Indiana Pacers",
         home_abbr: "OKC",

@@ -62,10 +62,10 @@ const GameView: React.FC<GameViewProps> = ({
                 {isLiveGame && (
                   <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center animate-pulse">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                )}
-              </div>
-              
+          </div>
+        )}
+      </div>
+
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                   {gameTeams.length >= 2 ? `${gameTeams[0].name} vs ${gameTeams[1].name}` : 'Game Analysis'}
@@ -87,17 +87,17 @@ const GameView: React.FC<GameViewProps> = ({
                         <span className="font-medium">UPCOMING</span>
                       </>
                     )}
-                  </div>
+            </div>
                   
                   <div className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400">
                     <Users className="w-4 h-4" />
                     <span className="font-medium">{gameTeams.length} Teams</span>
-                  </div>
-                  
+            </div>
+            
                   <div className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400">
                     <TrendingUp className="w-4 h-4" />
                     <span className="font-medium">Game #{gameId}</span>
-                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -251,10 +251,10 @@ const GameView: React.FC<GameViewProps> = ({
                       {isPulsing && (
                         <div className="px-3 py-1 bg-green-500/20 rounded-full border border-green-500/30 animate-pulse">
                           <span className="text-green-400 text-xs font-medium">MOMENTUM</span>
-                        </div>
+            </div>
                       )}
-                    </div>
-                    
+            </div>
+            
                     <Button
                       variant="ghost"
                       className="group/btn bg-gray-800/50 hover:bg-blue-600/20 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300"
@@ -262,16 +262,16 @@ const GameView: React.FC<GameViewProps> = ({
                       <span className="text-blue-400 group-hover/btn:text-blue-300 font-medium">Analyze Team</span>
                       <ChevronRight className="w-4 h-4 ml-2 text-blue-400 group-hover/btn:text-blue-300 group-hover/btn:translate-x-1 transition-all duration-300" />
                     </Button>
-                  </div>
+                </div>
 
                   {/* Enhanced hover effects */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-purple-600/0 to-blue-600/0 group-hover:from-blue-600/5 group-hover:via-purple-600/5 group-hover:to-blue-600/5 rounded-3xl transition-all duration-500 pointer-events-none"></div>
                 </div>
               </div>
-            </div>
+                </div>
           );
         })}
-      </div>
+                </div>
 
       {/* Enhanced Game Statistics Preview */}
       <div className="relative">
@@ -309,10 +309,10 @@ const GameView: React.FC<GameViewProps> = ({
               <div className="flex items-center justify-between mb-4">
                 <Users className="w-8 h-8 text-green-400" />
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse group-hover:animate-bounce"></div>
-              </div>
+        </div>
               <h4 className="text-lg font-bold text-white mb-2">Player Analysis</h4>
               <p className="text-gray-400 text-sm">Individual player performance and ML predictions</p>
-            </div>
+      </div>
 
             <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/30 hover:border-purple-500/30 transition-all duration-300 group">
               <div className="flex items-center justify-between mb-4">
