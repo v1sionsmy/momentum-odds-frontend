@@ -120,17 +120,17 @@ const fetchLiveGames = async (): Promise<Game[]> => {
       // Transform live games response
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const liveGames = data.live_games.map((game: any) => ({
-        id: game.game_id,
-        api_game_id: game.game_id,
+        id: game.id,
+        api_game_id: game.id,
         home_team: game.home_team,
         away_team: game.away_team,
-        home_abbr: game.home_team?.substring(0, 3).toUpperCase(),
-        away_abbr: game.away_team?.substring(0, 3).toUpperCase(),
+        home_abbr: game.home_abbr || game.home_team?.substring(0, 3).toUpperCase(),
+        away_abbr: game.away_abbr || game.away_team?.substring(0, 3).toUpperCase(),
         home_score: game.home_score || 0,
         away_score: game.away_score || 0,
         status: "LIVE",
         date: game.last_momentum_update || new Date().toISOString(),
-        start_time: game.last_momentum_update || new Date().toISOString()
+        start_time: game.start_time || new Date().toISOString()
       }));
       
       console.log('🔴 Transformed Live Games:', liveGames);
