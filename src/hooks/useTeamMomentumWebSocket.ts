@@ -9,7 +9,7 @@ interface TeamMomentum {
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 interface WebSocketMessage {
-  type: 'team_momentum' | 'error' | 'heartbeat';
+  type: 'momentum' | 'team_momentum' | 'error' | 'heartbeat';
   data?: TeamMomentum;
   error?: string;
   timestamp?: string;
@@ -33,10 +33,12 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const heartbeatTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const retryCountRef = useRef(0);
+  const lastGameIdRef = useRef<number | null>(null);
 
-  const MAX_RETRIES = 5;
+  const MAX_RETRIES = 3; // Reduced from 5 to prevent excessive retries
   const HEARTBEAT_INTERVAL = 30000; // 30 seconds
   const RECONNECT_DELAY = 2000; // 2 seconds base delay
+  const MAX_RECONNECT_DELAY = 30000; // Max 30 seconds between retries
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -53,16 +55,29 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
     setConnectionStatus('disconnected');
   }, []);
 
+  // Reset retry count when game changes
+  const resetRetries = useCallback(() => {
+    retryCountRef.current = 0;
+    setError(null);
+  }, []);
+
   // WebSocket connection with retry logic
   const connect = useCallback(() => {
     if (!gameId) return;
+
+    // Reset retries if this is a new game
+    if (lastGameIdRef.current !== gameId) {
+      resetRetries();
+      lastGameIdRef.current = gameId;
+    }
 
     cleanup();
     setConnectionStatus('connecting');
     setError(null);
 
     try {
-      const wsUrl = `${WS_BASE_URL}/ws/games/${gameId}/team-momentum`;
+      // Fix: Use the correct WebSocket endpoint that matches the backend
+      const wsUrl = `${WS_BASE_URL}/ws/games/${gameId}`;
       console.log(`🔌 Connecting to Team Momentum WebSocket: ${wsUrl}`);
       
       const ws = new WebSocket(wsUrl);
@@ -83,11 +98,22 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
         setIsLoading(false);
         retryCountRef.current = 0;
 
+        // Request initial momentum data
+        try {
+          ws.send(JSON.stringify({ type: 'request_update' }));
+        } catch (sendError) {
+          console.warn('⚠️ Failed to request initial momentum data:', sendError);
+        }
+
         // Start heartbeat
         const sendHeartbeat = () => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'ping' }));
-            heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, HEARTBEAT_INTERVAL);
+            try {
+              ws.send(JSON.stringify({ type: 'ping' }));
+              heartbeatTimeoutRef.current = setTimeout(sendHeartbeat, HEARTBEAT_INTERVAL);
+            } catch (heartbeatError) {
+              console.warn('⚠️ Heartbeat send failed:', heartbeatError);
+            }
           }
         };
         sendHeartbeat();
@@ -98,6 +124,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
           const message: WebSocketMessage = JSON.parse(event.data);
           
           switch (message.type) {
+            case 'momentum':
             case 'team_momentum':
               if (message.data) {
                 console.log('🏀 Received team momentum update:', message.data);
@@ -134,31 +161,42 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
         setConnectionStatus('disconnected');
 
         // Handle different close codes
-        if (event.code === 1000) {
-          // Normal closure - don't retry
+        if (event.code === 1000 || event.code === 1001) {
+          // Normal closure or going away - don't retry
+          console.log('✅ WebSocket closed normally, not retrying');
           return;
         }
 
-        // Retry with exponential backoff
+        // Enhanced retry logic with backoff cap
         if (retryCountRef.current < MAX_RETRIES) {
-          const delay = RECONNECT_DELAY * Math.pow(2, retryCountRef.current);
+          const delay = Math.min(
+            RECONNECT_DELAY * Math.pow(2, retryCountRef.current),
+            MAX_RECONNECT_DELAY
+          );
           retryCountRef.current += 1;
           
-          console.log(`🔄 Retrying team momentum connection in ${delay}ms (attempt ${retryCountRef.current})`);
+          console.log(`🔄 Retrying team momentum connection in ${delay}ms (attempt ${retryCountRef.current}/${MAX_RETRIES})`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
         } else {
-          console.error('❌ Max team momentum reconnection attempts reached');
-          setError(new Error('Connection failed after multiple attempts'));
+          console.error('❌ Max team momentum reconnection attempts reached, switching to fallback mode');
+          setError(new Error('WebSocket connection failed - using fallback polling'));
           setConnectionStatus('error');
+          setIsLoading(false); // Ensure we're not stuck in loading state
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('❌ Team Momentum WebSocket error:', error);
-        setError(new Error('WebSocket connection error'));
+      ws.onerror = (errorEvent) => {
+        console.error('❌ Team Momentum WebSocket error:', errorEvent);
+        
+        // Set a more informative error message
+        const errorMsg = retryCountRef.current >= MAX_RETRIES 
+          ? 'WebSocket connection failed after multiple attempts - using fallback polling'
+          : 'WebSocket connection error - will retry automatically';
+        
+        setError(new Error(errorMsg));
         setConnectionStatus('error');
       };
 
@@ -166,8 +204,9 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
       console.error('❌ Failed to create team momentum WebSocket:', err);
       setError(new Error('Failed to create WebSocket connection'));
       setConnectionStatus('error');
+      setIsLoading(false);
     }
-  }, [gameId, cleanup]);
+  }, [gameId, cleanup, resetRetries]);
 
   // Manual reconnect function
   const reconnect = useCallback(() => {
@@ -184,6 +223,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
       cleanup();
       setTeamMomentum(null);
       setIsLoading(false);
+      lastGameIdRef.current = null;
     }
 
     return cleanup;

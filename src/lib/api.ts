@@ -1,5 +1,5 @@
 const API_CONFIG = {
-  development: 'http://localhost:8000',
+  development: 'https://nba-analytics-api.onrender.com', // FORCE PRODUCTION - local DB missing tables
   production: 'https://nba-analytics-api.onrender.com' // HARDCODED FIX - force correct backend
 };
 
@@ -7,11 +7,13 @@ const API_CONFIG = {
 // Updated .env.local with correct backend URLs - 2024-12-29 18:20
 // DEBUG: Environment check for CORS fix - 2024-12-29 18:25
 // EMERGENCY HARDCODE FIX - 2024-12-29 18:30
+// LOCAL DB FIX - 2024-12-29 19:00 - Force production API since local DB missing game_teams table
 console.log('🔍 API_CONFIG check:', {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   final_config: API_CONFIG,
-  hardcoded_production: 'https://nba-analytics-api.onrender.com'
+  hardcoded_production: 'https://nba-analytics-api.onrender.com',
+  note: 'FORCED PRODUCTION - local DB missing tables'
 });
 
 const API_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
