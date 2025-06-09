@@ -78,7 +78,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
     try {
       // Fix: Use the correct WebSocket endpoint that matches the backend
       const wsUrl = `${WS_BASE_URL}/ws/games/${gameId}`;
-      console.log(`🔌 Connecting to Team Momentum WebSocket: ${wsUrl}`);
+      console.info(`🔌 Attempting team momentum WebSocket: ${wsUrl}`);
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -92,7 +92,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
 
       ws.onopen = () => {
         clearTimeout(connectionTimeout);
-        console.log('✅ Team Momentum WebSocket connected');
+        console.info('✅ Team Momentum WebSocket connected');
         setConnectionStatus('connected');
         setError(null);
         setIsLoading(false);
@@ -127,14 +127,14 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
             case 'momentum':
             case 'team_momentum':
               if (message.data) {
-                console.log('🏀 Received team momentum update:', message.data);
+                console.debug('🏀 Received team momentum update:', message.data);
                 setTeamMomentum(message.data);
                 setIsLoading(false);
               }
               break;
             
             case 'error':
-              console.error('❌ Team Momentum WebSocket error:', message.error);
+              console.warn('⚠️ Team Momentum WebSocket received error:', message.error);
               setError(new Error(message.error || 'WebSocket error'));
               break;
             
@@ -143,10 +143,10 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
               break;
             
             default:
-              console.log('📨 Unknown team momentum message type:', message.type);
+              console.debug('📨 Unknown team momentum message type:', message.type);
           }
         } catch (parseError) {
-          console.error('❌ Failed to parse team momentum WebSocket message:', parseError);
+          console.warn('⚠️ Failed to parse team momentum WebSocket message:', parseError);
           setError(new Error('Failed to parse WebSocket message'));
         }
       };
@@ -157,13 +157,13 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
           clearTimeout(heartbeatTimeoutRef.current);
         }
         
-        console.log('🔌 Team Momentum WebSocket closed:', event.code, event.reason);
+        console.info('🔌 Team Momentum WebSocket closed:', event.code, event.reason);
         setConnectionStatus('disconnected');
 
         // Handle different close codes
         if (event.code === 1000 || event.code === 1001) {
           // Normal closure or going away - don't retry
-          console.log('✅ WebSocket closed normally, not retrying');
+          console.info('✅ WebSocket closed normally, not retrying');
           return;
         }
 
@@ -175,34 +175,34 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
           );
           retryCountRef.current += 1;
           
-          console.log(`🔄 Retrying team momentum connection in ${delay}ms (attempt ${retryCountRef.current}/${MAX_RETRIES})`);
+          console.info(`🔄 Retrying team momentum connection in ${delay}ms (attempt ${retryCountRef.current}/${MAX_RETRIES})`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, delay);
         } else {
-          console.error('❌ Max team momentum reconnection attempts reached, switching to fallback mode');
-          setError(new Error('WebSocket connection failed - using fallback polling'));
+          console.info('ℹ️ Using API fallback mode for team momentum data');
+          setError(new Error('Using API fallback for momentum data'));
           setConnectionStatus('error');
           setIsLoading(false); // Ensure we're not stuck in loading state
         }
       };
 
-      ws.onerror = (errorEvent) => {
-        console.error('❌ Team Momentum WebSocket error:', errorEvent);
+      ws.onerror = (_errorEvent) => {
+        console.warn('⚠️ Team Momentum WebSocket connection issue, switching to API mode');
         
         // Set a more informative error message
         const errorMsg = retryCountRef.current >= MAX_RETRIES 
-          ? 'WebSocket connection failed after multiple attempts - using fallback polling'
-          : 'WebSocket connection error - will retry automatically';
+          ? 'Using API fallback for momentum data'
+          : 'Connection issue - retrying automatically';
         
         setError(new Error(errorMsg));
         setConnectionStatus('error');
       };
 
     } catch (err) {
-      console.error('❌ Failed to create team momentum WebSocket:', err);
-      setError(new Error('Failed to create WebSocket connection'));
+      console.warn('⚠️ Team Momentum WebSocket unavailable, using fallback mode');
+      setError(new Error('WebSocket unavailable - using API fallback'));
       setConnectionStatus('error');
       setIsLoading(false);
     }
@@ -210,7 +210,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
 
   // Manual reconnect function
   const reconnect = useCallback(() => {
-    console.log('🔄 Manual team momentum reconnect triggered');
+    console.info('🔄 Manual team momentum reconnect triggered');
     retryCountRef.current = 0;
     connect();
   }, [connect]);

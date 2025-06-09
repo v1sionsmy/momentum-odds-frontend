@@ -1,0 +1,194 @@
+/* ===== MOMENTUM PULSE ANIMATION SYSTEM ===== */
+
+/* Layer 1: Core Breathing Animation */
+@keyframes breathe {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+/* Layer 2: Team Pulse Rings */
+@keyframes teamRing {
+  0% { 
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  60% { 
+    transform: scale(1.8);
+    opacity: 0.1;
+  }
+  100% { 
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Layer 3: Player Card Flash */
+@keyframes playerFlash {
+  0%, 100% { 
+    background-opacity: var(--flash-min, 0.4);
+  }
+  50% { 
+    background-opacity: var(--flash-max, 1.0);
+  }
+}
+
+/* Enhanced Border Glow for Player Cards */
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* Subtle Bob Animation for Medium Momentum */
+@keyframes subtleBob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* RPM Gauge Fill Animation */
+@keyframes rpmFill {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+/* Team Ring Stagger Classes for Multiple Rings */
+@keyframes teamRingStagger1 {
+  0% { 
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  60% { 
+    transform: scale(1.8);
+    opacity: 0.1;
+  }
+  100% { 
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes teamRingStagger2 {
+  0% { 
+    transform: scale(1);
+    opacity: 0;
+  }
+  33% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  93% { 
+    transform: scale(1.8);
+    opacity: 0.1;
+  }
+  100% { 
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes teamRingStagger3 {
+  0% { 
+    transform: scale(1);
+    opacity: 0;
+  }
+  66% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% { 
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Utility Classes */
+.animate-breathe {
+  animation: breathe var(--breathe-duration, 2000ms) ease-in-out infinite;
+}
+
+.animate-team-ring {
+  animation: teamRing var(--ring-duration, 1000ms) ease-out infinite;
+}
+
+.animate-team-ring-1 {
+  animation: teamRingStagger1 var(--ring-duration, 1000ms) ease-out infinite;
+}
+
+.animate-team-ring-2 {
+  animation: teamRingStagger2 var(--ring-duration, 1000ms) ease-out infinite;
+}
+
+.animate-team-ring-3 {
+  animation: teamRingStagger3 var(--ring-duration, 1000ms) ease-out infinite;
+}
+
+.animate-player-flash {
+  animation: playerFlash var(--flash-duration, 1000ms) ease-in-out infinite;
+}
+
+.animate-border-glow {
+  animation: borderGlow var(--glow-duration, 1000ms) ease-in-out infinite;
+}
+
+.animate-subtle-bob {
+  animation: subtleBob var(--bob-duration, 1500ms) ease-in-out infinite;
+}
+
+.animate-rpm-fill {
+  animation: rpmFill var(--rpm-duration, 1000ms) ease-in-out infinite;
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  @keyframes playerFlash {
+    0%, 100% { 
+      background-opacity: var(--flash-min, 0.3);
+    }
+    50% { 
+      background-opacity: var(--flash-max, 0.8);
+    }
+  }
+
+  @keyframes borderGlow {
+    0%, 100% {
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 3px rgba(255, 255, 255, 0.05);
+    }
+    50% {
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+/* Performance optimizations */
+.pulse-ring, .pulse-core {
+  will-change: transform, opacity;
+  transform-origin: center;
+}
+
+.flash-card {
+  will-change: background-color, box-shadow, transform;
+} 

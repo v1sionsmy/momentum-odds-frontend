@@ -1,0 +1,131 @@
+import useSWR from 'swr';
+
+// API configuration
+const API_CONFIG = {
+  development: 'http://localhost:8000',
+  production: "https://nba-analytics-api.onrender.com"
+};
+
+const BASE_URL = API_CONFIG[process.env.NODE_ENV] || API_CONFIG.development;
+
+// Fetcher function
+const fetcher = async (url) => {
+  const response = await fetch(`${BASE_URL}${url}`);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return response.json();
+};
+
+// Calculate momentum absolute value for flash speed
+const calculateMomentumAbs = (momentum) => {
+  return Math.abs(momentum || 0);
+};
+
+// Mock prediction data (replace with real ML endpoint data)
+const generateMockPrediction = (playerId, quarter) => {
+  const baseStats = {
+    pts: Math.floor(Math.random() * 15) + 5,
+    reb: Math.floor(Math.random() * 8) + 2,
+    ast: Math.floor(Math.random() * 6) + 1
+  };
+  
+  return `${baseStats.pts} Pts / ${baseStats.reb} Reb / ${baseStats.ast} Ast (Q${quarter})`;
+};
+
+// Generate mock player data for testing momentum bands
+const generateMockPlayerData = (_gameId) => {
+  const mockPlayers = [
+    { id: '1', name: 'Jayson Tatum', teamId: 'BOS', baseMomentum: 85 },
+    { id: '2', name: 'Luka Dončić', teamId: 'DAL', baseMomentum: 78 },
+    { id: '3', name: 'Stephen Curry', teamId: 'GSW', baseMomentum: 72 },
+    { id: '4', name: 'LeBron James', teamId: 'LAL', baseMomentum: -65 },
+    { id: '5', name: 'Giannis Antetokounmpo', teamId: 'MIL', baseMomentum: 45 },
+    { id: '6', name: 'Kevin Durant', teamId: 'PHX', baseMomentum: 38 },
+    { id: '7', name: 'Nikola Jokić', teamId: 'DEN', baseMomentum: 25 },
+    { id: '8', name: 'Joel Embiid', teamId: 'PHI', baseMomentum: -28 },
+    { id: '9', name: 'Damian Lillard', teamId: 'MIL', baseMomentum: 15 },
+    { id: '10', name: 'Anthony Davis', teamId: 'LAL', baseMomentum: 8 },
+    { id: '11', name: 'Kawhi Leonard', teamId: 'LAC', baseMomentum: -12 },
+    { id: '12', name: 'Jimmy Butler', teamId: 'MIA', baseMomentum: 5 }
+  ];
+
+  return mockPlayers.map((player, _index) => {
+    // Add some randomness to momentum for more realistic testing
+    const variation = (Math.random() - 0.5) * 20;
+    const finalMomentum = Math.max(-100, Math.min(100, player.baseMomentum + variation));
+    
+    return {
+      playerId: player.id,
+      name: player.name,
+      teamId: player.teamId,
+      momentum_abs: calculateMomentumAbs(finalMomentum),
+      momentum: finalMomentum,
+      proj: generateMockPrediction(player.id, Math.floor(Math.random() * 4) + 1),
+      headshot: `/assets/players/${player.id}.png`,
+      // Generate realistic momentum trend
+      momentumTrend: Array.from({ length: 3 }, (_, i) => {
+        const trendBase = finalMomentum / 100;
+        const trendVariation = (Math.random() - 0.5) * 0.3;
+        return Math.max(-1, Math.min(1, trendBase + trendVariation));
+      })
+    };
+  }).sort((a, b) => b.momentum_abs - a.momentum_abs);
+};
+
+/**
+ * Hook for fetching player momentum data for all players in a game
+ * @param {number|null} _gameId - The game ID to fetch player momentum for
+ * @param {number} quarter - Current quarter for predictions
+ * @returns {Array} - Array of player momentum objects
+ */
+export function usePlayerMomentums(_gameId, quarter = 1) {
+  const { data, error, isLoading, mutate } = useSWR(
+    _gameId ? `/api/games/${_gameId}/player-momentum` : null,
+    fetcher,
+    {
+      refreshInterval: 10000, // Poll every 10 seconds
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 5000, // Prevent duplicate requests within 5 seconds
+      // For demo purposes, start with mock data if API fails
+      fallbackData: _gameId ? { playerMomentum: {}, players: {} } : null
+    }
+  );
+
+  // Transform data into the expected format
+  let transformedData = [];
+  
+  if (data?.playerMomentum && Object.keys(data.playerMomentum).length > 0) {
+    // Use real API data if available
+    transformedData = Object.entries(data.playerMomentum).map(([playerId, momentum]) => {
+      const playerData = data.players?.[playerId] || {};
+      
+      return {
+        playerId,
+        name: playerData.name || `Player ${playerId}`,
+        teamId: playerData.teamId || playerData.team_id || null,
+        momentum_abs: calculateMomentumAbs(momentum),
+        momentum: momentum || 0,
+        proj: playerData.prediction || generateMockPrediction(playerId, quarter),
+        headshot: `/assets/players/${playerId}.png`,
+        // Mock trend data for mini sparkline (replace with real data)
+        momentumTrend: [
+          momentum * 0.8 || Math.random() * 0.5,
+          momentum * 0.9 || Math.random() * 0.7,
+          momentum || Math.random() * 1.0
+        ]
+      };
+    }).sort((a, b) => b.momentum_abs - a.momentum_abs);
+  } else if (_gameId) {
+    // Use mock data for demo/testing when no real data is available
+    transformedData = generateMockPlayerData(_gameId);
+  }
+
+  return {
+    data: transformedData,
+    isLoading: isLoading && transformedData.length === 0,
+    error: error && transformedData.length === 0 ? error : null,
+    mutate
+  };
+} 

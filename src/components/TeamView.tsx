@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { TrendingUp, Users, Activity, Zap, Star, Target, BarChart3, AlertCircle } from 'lucide-react';
+import { Users, Activity, Zap, Star, Target, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TeamMomentum {
@@ -22,7 +22,6 @@ interface Player {
 }
 
 interface TeamViewProps {
-  gameId: number;
   teamName: string | null;
   teamMomentum: TeamMomentum | null;
   isLoading: boolean;
@@ -44,7 +43,6 @@ function getTeamMomentumValue(teamMomentum: TeamMomentum | null, teamName: strin
 */
 
 const TeamView: React.FC<TeamViewProps> = ({
-  gameId,
   teamName,
   teamMomentum,
   isLoading,
@@ -182,47 +180,41 @@ const TeamView: React.FC<TeamViewProps> = ({
       <div className="relative">
         {/* Dynamic team momentum glow */}
         {isTeamPulsing && (
-          <div 
-            className="absolute inset-0 rounded-3xl blur-3xl opacity-40 animate-pulse"
-            style={{
-              background: `radial-gradient(circle, ${colors.glow} 0%, transparent 70%)`
-            }}
-          ></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/40 via-green-100/30 to-emerald-100/40 rounded-2xl blur-sm"></div>
         )}
         
-        <div className="relative bg-gradient-to-br from-gray-900/90 to-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-2xl">
+        <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg">
           <div className="flex items-center justify-between">
             {/* Team Info */}
             <div className="flex items-center space-x-6">
               <div 
-                className={`w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-bold transition-all duration-500 ${
-                  isTeamPulsing ? 'shadow-2xl animate-pulse' : 'shadow-lg'
+                className={`w-20 h-20 rounded-xl flex items-center justify-center text-white text-2xl font-bold transition-all duration-300 ${
+                  isTeamPulsing ? 'shadow-lg' : 'shadow-md'
                 }`}
                 style={{
-                  background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                  boxShadow: isTeamPulsing ? `0 0 30px ${colors.glow}` : undefined
+                  backgroundColor: colors.primary
                 }}
               >
                 {getTeamInitials(teamName)}
-          </div>
+              </div>
               
               <div>
                 <div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {teamName}
                   </h1>
-                  <div className="text-gray-400 text-lg mb-3">
+                  <div className="text-gray-600 text-lg mb-3">
                     Team Analysis & Player Performance
                   </div>
                   
                   {/* Momentum Score Display */}
                   <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2 px-4 py-2 bg-gray-700/50 rounded-xl border border-gray-600/30">
-                      <Activity className="w-4 h-4 text-blue-400" />
-                      <span className="text-sm text-gray-300">Momentum Score:</span>
+                    <div className="flex items-center space-x-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-200">
+                      <Activity className="w-4 h-4 text-emerald-600" />
+                      <span className="text-sm text-gray-700">Momentum Score:</span>
                       <span className={`font-bold text-lg ${
-                        momentumScore > 0.7 ? 'text-green-400' : 
-                        momentumScore > 0.4 ? 'text-yellow-400' : 'text-red-400'
+                        momentumScore > 0.7 ? 'text-emerald-600' : 
+                        momentumScore > 0.4 ? 'text-yellow-600' : 'text-red-600'
                       }`}>
                         {(momentumScore * 100).toFixed(0)}%
                       </span>

@@ -1,8 +1,11 @@
 @import "tailwindcss";
+@import "../styles/animations.css";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --flash-colour: #ffffff;
+  --flash-duration: 2s;
 }
 
 @theme inline {
@@ -23,6 +26,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Momentum Flash System */
+@keyframes pulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: .9; }
+}
+
+.momentum-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--flash-colour);
+  animation: pulse var(--flash-duration) infinite;
+  mix-blend-mode: screen;   /* lets the colour tint without hiding UI */
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .momentum-overlay {
+    animation-duration: 3s;
+    opacity: 0.4 !important;
+  }
 }
 
 /* Custom momentum animations */

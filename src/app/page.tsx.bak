@@ -148,7 +148,7 @@ export default function Home() {
             Ready to Feel the Game?
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Jump into tonight&apos;s live dashboard to watch the exact second the tide turned. 
+            Jump into tonight's live dashboard to watch the exact second the tide turned. 
             Because sports swing on moments—and now you can, too.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

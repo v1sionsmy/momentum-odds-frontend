@@ -88,21 +88,21 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
       <div className="space-y-4 animate-pulse">
         {[1, 2, 3].map(i => (
           <div key={i} className="relative">
-            {/* Animated loading shimmer */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/20 to-blue-600/10 rounded-2xl animate-pulse"></div>
+            {/* Loading shimmer */}
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 rounded-xl animate-pulse"></div>
             
-            <div className="relative bg-gradient-to-br from-gray-800/80 to-slate-800/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/30">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-gray-600/50 to-gray-700/50 rounded-xl animate-pulse"></div>
+            <div className="relative bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
                 <div className="flex-1">
-                  <div className="h-4 bg-gradient-to-r from-gray-600/50 to-gray-700/50 rounded-lg mb-2 animate-pulse"></div>
-                  <div className="h-3 bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-lg w-2/3 animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2 animate-pulse"></div>
+                  <div className="h-3 bg-gray-150 rounded w-2/3 animate-pulse"></div>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <div className="h-3 bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-lg animate-pulse"></div>
-                <div className="h-3 bg-gradient-to-r from-gray-700/50 to-gray-800/50 rounded-lg w-4/5 animate-pulse"></div>
+                <div className="h-3 bg-gray-150 rounded animate-pulse"></div>
+                <div className="h-3 bg-gray-150 rounded w-4/5 animate-pulse"></div>
               </div>
             </div>
           </div>
@@ -122,151 +122,151 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
         )
       }));
     
-    return (
-      <div className="space-y-4">
-        {games.map(({ gameId, teams, isLive }) => {
-          const isSelected = selectedGameId === gameId;
-          const gameHasMomentum = teams.some(team => momentumPulse[`team-${team.id}`]);
+    // Separate live and upcoming games
+    const liveGames = games.filter(game => game.isLive);
+    const upcomingGames = games.filter(game => !game.isLive);
+    
+    const renderGame = (gameData: typeof games[0]) => {
+      const { gameId, teams, isLive } = gameData;
+      const isSelected = selectedGameId === gameId;
+      const gameHasMomentum = teams.some(team => momentumPulse[`team-${team.id}`]);
+      
+      return (
+        <div
+          key={gameId}
+          className="relative group cursor-pointer"
+          onClick={() => onGameSelect(gameId)}
+        >
+          {/* Selected game indicator */}
+          {isSelected && (
+            <div className="absolute left-0 top-1 bottom-1 w-1 bg-blue-500 rounded-r-full z-10"></div>
+          )}
           
-          return (
-                <div
-                  key={gameId}
-              className="relative group cursor-pointer"
-              onClick={() => onGameSelect(gameId)}
+          {/* Momentum glow effect */}
+          {gameHasMomentum && (
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-100/50 via-green-100/60 to-emerald-100/50 rounded-xl blur-sm"></div>
+          )}
+          
+          <div className={`relative transform transition-all duration-300 ${
+            isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
+          }`}>
+            <div 
+              className={`bg-white rounded-xl p-4 border transition-all duration-300 shadow-sm ${
+                isSelected 
+                  ? 'border-blue-500 shadow-blue-200 bg-blue-50 ring-2 ring-blue-200' 
+                  : gameHasMomentum
+                    ? 'border-green-200 shadow-green-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+              }`}
             >
-              {/* Enhanced momentum glow effect */}
-              {gameHasMomentum && (
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/30 to-pink-600/20 rounded-2xl blur-xl animate-pulse"></div>
-              )}
-              
-              <div className={`relative transform transition-all duration-500 ${
-                isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
-              }`}>
-                <div 
-                  className={`bg-gradient-to-br from-gray-800/90 to-slate-800/90 backdrop-blur-xl rounded-2xl p-6 border transition-all duration-500 ${
-                    isSelected 
-                      ? 'border-blue-500/50 shadow-xl shadow-blue-500/20' 
-                      : gameHasMomentum
-                        ? 'border-purple-500/30 shadow-lg'
-                        : 'border-gray-700/30 hover:border-gray-600/50'
-                  }`}
-                >
-                  {/* Game Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                        isLive 
-                          ? 'bg-gradient-to-br from-red-500/30 to-pink-500/30 border border-red-500/30' 
-                          : 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-blue-500/30'
-                      }`}>
-                        {isLive ? (
-                          <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
-                        ) : (
-                          <Calendar className="w-5 h-5 text-blue-400" />
-                        )}
-                      </div>
-                      
-                      <div>
-                        <div className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors duration-300">
-                          Game #{gameId}
-                        </div>
-                        <div className={`text-sm font-medium ${
-                          isLive ? 'text-red-400' : 'text-yellow-400'
-                        }`}>
-                          {isLive ? 'LIVE NOW' : 'UPCOMING'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {gameHasMomentum && (
-                      <div className="flex items-center space-x-2 px-3 py-1 bg-purple-500/20 rounded-full border border-purple-500/30 animate-pulse">
-                        <Zap className="w-3 h-3 text-purple-400" />
-                        <span className="text-purple-400 text-xs font-bold">HIGH MOMENTUM</span>
-                      </div>
+              {/* Game Header */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                    isLive 
+                      ? 'bg-emerald-100 border border-emerald-200' 
+                      : 'bg-gray-100 border border-gray-200'
+                  }`}>
+                    {isLive ? (
+                      <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                    ) : (
+                      <Calendar className="w-4 h-4 text-gray-500" />
                     )}
                   </div>
                   
-                  {/* Teams Display */}
-                  <div className="space-y-3">
-                    {teams.slice(0, 2).map((team) => {
-                      const colors = getTeamColor(team.name);
-                      const isPulsing = momentumPulse[`team-${team.id}`];
-                      
-                      return (
+                  <div>
+                    <div className={`text-base font-semibold transition-colors duration-300 ${
+                      isSelected 
+                        ? 'text-blue-900' 
+                        : 'text-gray-900 group-hover:text-emerald-700'
+                    }`}>
+                      Game #{gameId}
+                    </div>
+                    <div className={`text-xs font-medium ${
+                      isLive ? 'text-emerald-600' : isSelected ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {isLive ? 'LIVE' : 'UPCOMING'}
+                    </div>
+                  </div>
+                </div>
+
+                {gameHasMomentum && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-100 rounded-lg border border-emerald-200">
+                    <Zap className="w-3 h-3 text-emerald-600" />
+                    <span className="text-emerald-700 text-xs font-medium">HIGH</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Teams Display */}
+              <div className="space-y-2">
+                {teams.slice(0, 2).map((team) => {
+                  const colors = getTeamColor(team.name);
+                  const isPulsing = momentumPulse[`team-${team.id}`];
+                  
+                  return (
+                    <div 
+                      key={team.id}
+                      className={`flex items-center justify-between p-2 rounded-lg transition-all duration-300 ${
+                        isPulsing 
+                          ? 'bg-emerald-50 border border-emerald-200' 
+                          : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
                         <div 
-                          key={team.id}
-                          className={`flex items-center justify-between p-3 rounded-xl transition-all duration-500 ${
-                            isPulsing 
-                              ? 'bg-gradient-to-r from-gray-700/50 to-gray-600/50 border border-purple-400/30 shadow-lg' 
-                              : 'bg-gray-700/30 hover:bg-gray-600/30'
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold ${
+                            isPulsing ? 'shadow-sm' : ''
                           }`}
                           style={{
-                            background: isPulsing 
-                              ? `linear-gradient(90deg, ${colors.primary}15, ${colors.secondary}10)`
-                              : undefined
+                            backgroundColor: colors.primary
                           }}
                         >
-                          <div className="flex items-center space-x-3">
-                            <div 
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold ${
-                                isPulsing ? 'animate-pulse shadow-lg' : ''
-                              }`}
-                              style={{
-                                background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                                boxShadow: isPulsing ? `0 0 15px ${colors.glow}` : undefined
-                              }}
-                            >
-                              {getTeamInitials(team.name)}
-                            </div>
-                            
-                            <div className="flex-1">
-                              <div className={`font-medium text-sm ${
-                                isPulsing ? 'text-white' : 'text-gray-300'
-                              }`}>
-                                {team.name}
-                              </div>
-                              {team.score !== undefined && (
-                                <div className="text-lg font-bold text-white">
-                                  {team.score}
-                    </div>
-                  )}
-                            </div>
-                          </div>
-
-                          {isPulsing && (
-                            <div className="flex items-center space-x-1">
-                              <div 
-                                className="w-2 h-2 rounded-full animate-pulse"
-                                style={{ backgroundColor: colors.primary }}
-                              ></div>
-                              <TrendingUp className="w-4 h-4 text-green-400 animate-bounce" />
-                            </div>
-                          )}
+                          {getTeamInitials(team.name)}
                         </div>
-                      );
-                    })}
-                  </div>
+                        
+                        <div className="flex-1">
+                          <div className={`text-sm font-medium ${
+                            isPulsing ? 'text-emerald-900' : 'text-gray-900'
+                          }`}>
+                            {team.name}
+                          </div>
+                          <div className={`text-xs ${
+                            isPulsing ? 'text-emerald-600' : 'text-gray-500'
+                          }`}>
+                            {team.isHome ? 'Home' : 'Away'} • {team.score || 0} pts
+                          </div>
+                        </div>
+                      </div>
 
-                  {/* Game Actions */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/30">
-                    <div className="flex space-x-2">
-                      <div className="px-2 py-1 bg-blue-500/20 rounded-lg border border-blue-500/30">
-                        <span className="text-blue-400 text-xs font-medium">ANALYTICS</span>
+                      {isPulsing && (
+                        <div className="flex items-center space-x-1">
+                          <Activity className="w-3 h-3 text-emerald-600 animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action indicator */}
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-3 h-3 text-gray-400" />
+                  <span className="text-xs text-gray-500">Click to analyze</span>
                 </div>
-                      {gameHasMomentum && (
-                        <div className="px-2 py-1 bg-green-500/20 rounded-lg border border-green-500/30 animate-pulse">
-                          <span className="text-green-400 text-xs font-medium">MOMENTUM</span>
-          </div>
-        )}
-                  </div>
-                  
-                    <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300" />
-                  </div>
-                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-600 transition-colors duration-300" />
               </div>
             </div>
-          );
-        })}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-3">
+        {liveGames.map(renderGame)}
+        {upcomingGames.map(renderGame)}
       </div>
     );
   }

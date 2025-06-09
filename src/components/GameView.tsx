@@ -49,55 +49,55 @@ const GameView: React.FC<GameViewProps> = ({
     <div className="space-y-8">
       {/* Enhanced Game Header */}
       <div className="relative">
-        {/* Dynamic background glow */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10 rounded-3xl blur-3xl animate-pulse"></div>
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/50 via-green-50/30 to-emerald-50/50 rounded-2xl"></div>
         
-        <div className="relative bg-gradient-to-br from-gray-900/80 to-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30 shadow-2xl">
+        <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600/30 to-purple-600/30 rounded-2xl flex items-center justify-center border border-blue-500/30">
-                  <Trophy className="w-8 h-8 text-blue-400" />
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl flex items-center justify-center border border-emerald-200">
+                  <Trophy className="w-8 h-8 text-emerald-600" />
                 </div>
                 {isLiveGame && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center animate-pulse">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full flex items-center justify-center animate-pulse">
                     <div className="w-2 h-2 bg-white rounded-full"></div>
-          </div>
-        )}
-      </div>
+                  </div>
+                )}
+              </div>
 
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   {gameTeams.length >= 2 ? `${gameTeams[0].name} vs ${gameTeams[1].name}` : 'Game Analysis'}
                 </h1>
                 <div className="flex items-center space-x-4 mt-2">
-                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${
+                  <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border ${
                     isLiveGame 
-                      ? 'bg-red-500/20 border-red-500/30 text-red-400' 
-                      : 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                      : 'bg-gray-50 border-gray-200 text-gray-700'
                   }`}>
                     {isLiveGame ? (
                       <>
-                        <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
-                        <span className="font-medium">LIVE NOW</span>
+                        <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span className="font-medium text-sm">LIVE NOW</span>
                       </>
                     ) : (
                       <>
                         <Calendar className="w-4 h-4" />
-                        <span className="font-medium">UPCOMING</span>
+                        <span className="font-medium text-sm">UPCOMING</span>
                       </>
                     )}
-            </div>
+                  </div>
                   
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400">
+                  <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700">
                     <Users className="w-4 h-4" />
-                    <span className="font-medium">{gameTeams.length} Teams</span>
-            </div>
+                    <span className="font-medium text-sm">{gameTeams.length} Teams</span>
+                  </div>
             
-                  <div className="flex items-center space-x-2 px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400">
+                  <div className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700">
                     <TrendingUp className="w-4 h-4" />
-                    <span className="font-medium">Game #{gameId}</span>
-                </div>
+                    <span className="font-medium text-sm">Game #{gameId}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -105,16 +105,16 @@ const GameView: React.FC<GameViewProps> = ({
             {/* Enhanced analytics preview */}
             <div className="text-right">
               <div className="flex items-center justify-end space-x-3 mb-3">
-                <div className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full border border-green-500/30">
-                  <span className="text-green-400 font-bold text-sm">AI POWERED</span>
+                <div className="px-3 py-1.5 bg-emerald-100 rounded-lg border border-emerald-200">
+                  <span className="text-emerald-700 font-semibold text-sm">AI POWERED</span>
                 </div>
-                <div className="px-4 py-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-full border border-orange-500/30">
-                  <span className="text-orange-400 font-bold text-sm">LIVE ANALYSIS</span>
+                <div className="px-3 py-1.5 bg-green-100 rounded-lg border border-green-200">
+                  <span className="text-green-700 font-semibold text-sm">LIVE ANALYSIS</span>
                 </div>
               </div>
-              <div className="text-gray-400">
+              <div className="text-gray-600">
                 <div className="text-sm font-medium">Real-time momentum tracking & ML predictions</div>
-                <div className="text-xs mt-1 opacity-80">Click a team below to see detailed player analytics</div>
+                <div className="text-xs mt-1">Click a team below to see detailed player analytics</div>
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@ const GameView: React.FC<GameViewProps> = ({
       </div>
 
       {/* Enhanced Team Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {gameTeams.map((team, index) => {
           const colors = getTeamColor(team.name);
           const isPulsing = momentumPulse[`team-${team.id}`];
@@ -132,51 +132,40 @@ const GameView: React.FC<GameViewProps> = ({
             <div key={team.id} className="relative group">
               {/* Momentum pulse background */}
               {isPulsing && (
-                <div 
-                  className="absolute inset-0 rounded-3xl blur-xl opacity-60 animate-pulse"
-                  style={{
-                    background: `radial-gradient(circle, ${colors.glow} 0%, transparent 70%)`
-                  }}
-                ></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/60 via-green-100/40 to-emerald-100/60 rounded-2xl blur-sm"></div>
               )}
               
               {/* Enhanced team card */}
               <div 
-                className={`relative transform transition-all duration-500 hover:scale-[1.02] cursor-pointer ${
-                  isPulsing ? 'shadow-2xl' : 'shadow-xl'
+                className={`relative transform transition-all duration-300 hover:scale-[1.02] cursor-pointer ${
+                  isPulsing ? 'shadow-lg shadow-emerald-100' : 'shadow-md'
                 }`}
                 onClick={() => onTeamSelect(team.id, team.name)}
-                style={{
-                  filter: isPulsing ? `drop-shadow(0 0 20px ${colors.glow})` : undefined
-                }}
               >
                 <div 
-                  className="bg-gradient-to-br from-gray-900/90 to-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border transition-all duration-500 group-hover:border-blue-500/50"
-                  style={{
-                    borderColor: isPulsing ? colors.primary : undefined,
-                    background: isPulsing 
-                      ? `linear-gradient(135deg, ${colors.primary}10, ${colors.secondary}05)` 
-                      : undefined
-                  }}
+                  className={`bg-white/95 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 ${
+                    isPulsing 
+                      ? 'border-emerald-300 shadow-emerald-100' 
+                      : 'border-gray-200 hover:border-emerald-200 hover:shadow-lg'
+                  }`}
                 >
                   {/* Team Header */}
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-4">
                       {/* Team Logo Placeholder */}
                       <div 
-                        className={`w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-lg transition-all duration-500 ${
-                          isPulsing ? 'shadow-lg animate-pulse' : ''
+                        className={`w-16 h-16 rounded-xl flex items-center justify-center font-bold text-white text-lg transition-all duration-300 ${
+                          isPulsing ? 'shadow-md' : ''
                         }`}
                         style={{
-                          background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-                          boxShadow: isPulsing ? `0 0 20px ${colors.glow}` : undefined
+                          backgroundColor: colors.primary
                         }}
                       >
                         {getTeamInitials(team.name)}
                       </div>
                       
                       <div>
-                        <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300">
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">
                           {team.name}
                         </h3>
                         <div className="flex items-center space-x-2 mt-1">
@@ -184,7 +173,7 @@ const GameView: React.FC<GameViewProps> = ({
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: colors.primary }}
                           ></div>
-                          <span className="text-gray-400 text-sm font-medium">
+                          <span className="text-gray-600 text-sm font-medium">
                             {isLiveGame ? 'Playing Now' : 'Scheduled'}
                           </span>
                         </div>
@@ -194,14 +183,14 @@ const GameView: React.FC<GameViewProps> = ({
                     {/* Score and Status */}
                     <div className="text-right">
                       {team.score !== undefined && (
-                        <div className={`text-4xl font-bold mb-2 transition-all duration-500 ${
-                          isWinning ? 'text-green-400 scale-110' : 'text-white'
+                        <div className={`text-3xl font-bold mb-2 transition-all duration-300 ${
+                          isWinning ? 'text-emerald-600' : 'text-gray-900'
                         }`}>
                           {team.score}
-                          {isWinning && <Star className="inline w-6 h-6 ml-2 text-yellow-400 animate-pulse" />}
+                          {isWinning && <Star className="inline w-5 h-5 ml-2 text-yellow-500" />}
                         </div>
                       )}
-                      <div className="text-gray-400 text-sm">
+                      <div className="text-gray-600 text-sm">
                         {team.status}
                       </div>
                     </div>
@@ -210,31 +199,29 @@ const GameView: React.FC<GameViewProps> = ({
                   {/* Momentum Indicators */}
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-gray-300 font-medium">Team Momentum</span>
+                      <span className="text-gray-700 font-medium">Team Momentum</span>
                       <div className="flex items-center space-x-2">
                         <div 
                           className={`w-3 h-3 rounded-full transition-all duration-300 ${
                             isPulsing ? 'animate-pulse' : ''
                           }`}
-                          style={{ backgroundColor: isPulsing ? colors.primary : '#6B7280' }}
+                          style={{ backgroundColor: isPulsing ? colors.primary : '#9CA3AF' }}
                         ></div>
-                        <span className={`text-sm font-bold ${isPulsing ? 'text-green-400' : 'text-gray-400'}`}>
+                        <span className={`text-sm font-bold ${isPulsing ? 'text-emerald-700' : 'text-gray-500'}`}>
                           {isPulsing ? 'HIGH' : 'NORMAL'}
                         </span>
                       </div>
                     </div>
                     
                     {/* Momentum bar */}
-                    <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-1000 ${
-                          isPulsing ? 'animate-pulse' : ''
+                          isPulsing ? '' : ''
                         }`}
                         style={{
                           width: isPulsing ? '85%' : '60%',
-                          background: isPulsing 
-                            ? `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`
-                            : 'linear-gradient(90deg, #6B7280, #9CA3AF)'
+                          backgroundColor: isPulsing ? colors.primary : '#9CA3AF'
                         }}
                       ></div>
                     </div>
@@ -242,86 +229,83 @@ const GameView: React.FC<GameViewProps> = ({
 
                   {/* Enhanced Call to Action */}
                   <div className="flex items-center justify-between">
-                    <div className="flex space-x-3">
-                      <div className="px-3 py-1 bg-blue-500/20 rounded-full border border-blue-500/30">
-                        <span className="text-blue-400 text-xs font-medium">ANALYTICS</span>
+                    <div className="flex space-x-2">
+                      <div className="px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <span className="text-emerald-700 text-xs font-medium">ANALYTICS</span>
                       </div>
-                      <div className="px-3 py-1 bg-purple-500/20 rounded-full border border-purple-500/30">
-                        <span className="text-purple-400 text-xs font-medium">PREDICTIONS</span>
+                      <div className="px-2 py-1 bg-green-50 rounded-lg border border-green-200">
+                        <span className="text-green-700 text-xs font-medium">PREDICTIONS</span>
                       </div>
                       {isPulsing && (
-                        <div className="px-3 py-1 bg-green-500/20 rounded-full border border-green-500/30 animate-pulse">
-                          <span className="text-green-400 text-xs font-medium">MOMENTUM</span>
-            </div>
+                        <div className="px-2 py-1 bg-yellow-50 rounded-lg border border-yellow-200">
+                          <span className="text-yellow-700 text-xs font-medium">MOMENTUM</span>
+                        </div>
                       )}
-            </div>
+                    </div>
             
                     <Button
                       variant="ghost"
-                      className="group/btn bg-gray-800/50 hover:bg-blue-600/20 border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300"
+                      className="text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border border-emerald-200 hover:border-emerald-300"
                     >
-                      <span className="text-blue-400 group-hover/btn:text-blue-300 font-medium">Analyze Team</span>
-                      <ChevronRight className="w-4 h-4 ml-2 text-blue-400 group-hover/btn:text-blue-300 group-hover/btn:translate-x-1 transition-all duration-300" />
+                      <span className="font-medium text-sm">Analyze Team</span>
+                      <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-all duration-300" />
                     </Button>
-                </div>
-
-                  {/* Enhanced hover effects */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-purple-600/0 to-blue-600/0 group-hover:from-blue-600/5 group-hover:via-purple-600/5 group-hover:to-blue-600/5 rounded-3xl transition-all duration-500 pointer-events-none"></div>
+                  </div>
                 </div>
               </div>
-                </div>
+            </div>
           );
         })}
-                </div>
+      </div>
 
       {/* Enhanced Game Statistics Preview */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-3xl blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/30 to-green-50/30 rounded-2xl"></div>
         
-        <div className="relative bg-gradient-to-br from-gray-900/80 to-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/30">
+        <div className="relative bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-600/30 to-pink-600/30 rounded-xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-purple-400" />
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl flex items-center justify-center border border-emerald-200">
+                <Zap className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white">Game Analytics Preview</h3>
-                <p className="text-gray-400">Real-time insights and predictions</p>
+                <h3 className="text-xl font-bold text-gray-900">Game Analytics Preview</h3>
+                <p className="text-gray-600">Real-time insights and predictions</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full border border-purple-500/30">
-              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-              <span className="text-purple-400 font-medium text-sm">LIVE TRACKING</span>
+            <div className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+              <span className="text-emerald-700 font-medium text-sm">LIVE TRACKING</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group">
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all duration-300 group">
               <div className="flex items-center justify-between mb-4">
-                <TrendingUp className="w-8 h-8 text-blue-400" />
-                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse group-hover:animate-spin"></div>
+                <TrendingUp className="w-6 h-6 text-emerald-600" />
+                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">Momentum Tracking</h4>
-              <p className="text-gray-400 text-sm">Real-time team momentum analysis with visual indicators</p>
+              <h4 className="text-base font-semibold text-gray-900 mb-2">Momentum Tracking</h4>
+              <p className="text-gray-600 text-sm">Real-time team momentum analysis with visual indicators</p>
             </div>
 
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/30 hover:border-green-500/30 transition-all duration-300 group">
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-200 hover:border-green-200 hover:bg-green-50/30 transition-all duration-300 group">
               <div className="flex items-center justify-between mb-4">
-                <Users className="w-8 h-8 text-green-400" />
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse group-hover:animate-bounce"></div>
-        </div>
-              <h4 className="text-lg font-bold text-white mb-2">Player Analysis</h4>
-              <p className="text-gray-400 text-sm">Individual player performance and ML predictions</p>
-      </div>
-
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/30 hover:border-purple-500/30 transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-4">
-                <Star className="w-8 h-8 text-purple-400" />
-                <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse group-hover:animate-ping"></div>
+                <Users className="w-6 h-6 text-green-600" />
+                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">AI Predictions</h4>
-              <p className="text-gray-400 text-sm">Advanced machine learning models for game outcomes</p>
+              <h4 className="text-base font-semibold text-gray-900 mb-2">Player Analysis</h4>
+              <p className="text-gray-600 text-sm">Individual player performance and ML predictions</p>
+            </div>
+
+            <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <Star className="w-6 h-6 text-emerald-600" />
+                <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+              </div>
+              <h4 className="text-base font-semibold text-gray-900 mb-2">AI Predictions</h4>
+              <p className="text-gray-600 text-sm">Advanced machine learning models for game outcomes</p>
             </div>
           </div>
         </div>
