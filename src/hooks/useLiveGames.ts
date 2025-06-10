@@ -203,6 +203,7 @@ export function useLiveTeams() {
           status: game.status
         });
     }
+      });
     
     return teamsArray;
   }, [games]);
