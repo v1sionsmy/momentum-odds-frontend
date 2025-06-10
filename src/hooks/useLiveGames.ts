@@ -87,20 +87,10 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
       
       console.log('📅 All transformed games:', allTransformed);
       
-      const upcomingGames = allTransformed.filter((game: Game) => {
-        const gameDate = new Date(game.start_time);
-        const isUpcoming = gameDate > now;
-        console.log(`📅 Game ${game.home_team} vs ${game.away_team}:`, {
-          start_time: game.start_time,
-          gameDate: gameDate.toISOString(),
-          isUpcoming,
-          status: game.status
-        });
-        return isUpcoming;
-      });
+      // Backend already provides scheduled games - no client-side filtering needed
       
-      console.log('📅 Filtered upcoming games:', upcomingGames);
-      return upcomingGames;
+      console.log("📅 Final upcoming games:", allTransformed);
+      return allTransformed;
     }
     
     return [];
@@ -152,7 +142,6 @@ export function useAllGames() {
     gcTime: 10 * 60 * 1000, // 10 minutes cache
     refetchOnWindowFocus: false, // Stop aggressive refetching
     refetchInterval: 60 * 1000, // Only refetch every 60 seconds if needed
-  });
 }
 
 export function useUpcomingGames() {
@@ -163,14 +152,12 @@ export function useUpcomingGames() {
     gcTime: 30 * 60 * 1000, // 30 minutes cache
     refetchOnWindowFocus: false,
     refetchInterval: 5 * 60 * 1000, // Only refetch every 5 minutes
-  });
   
   console.log('🔮 useUpcomingGames result:', {
     data: result.data,
     isLoading: result.isLoading,
     error: result.error,
     dataLength: result.data?.length
-  });
   
   return result;
 }
@@ -183,7 +170,6 @@ export function useLiveGames() {
     gcTime: 2 * 60 * 1000, // 2 minutes cache
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchInterval: 30 * 1000, // Refetch every 30 seconds for live data
-  });
 }
 
 export function useLiveTeams() {
@@ -204,7 +190,6 @@ export function useLiveTeams() {
           opponentScore: game.away_score,
           opponent: game.away_team,
           status: game.status
-        });
         
         // Add away team
         teamsArray.push({
@@ -216,8 +201,6 @@ export function useLiveTeams() {
           opponentScore: game.home_score,
           opponent: game.home_team,
           status: game.status
-        });
-      });
     }
     
     return teamsArray;
@@ -250,7 +233,6 @@ export function useUpcomingTeams() {
           opponentScore: game.away_score,
           opponent: game.away_team,
           status: game.status
-        });
         
         // Add away team
         teamsArray.push({
@@ -262,8 +244,6 @@ export function useUpcomingTeams() {
           opponentScore: game.home_score,
           opponent: game.home_team,
           status: game.status
-        });
-      });
     }
     
     console.log('🏀 useUpcomingTeams - final teams:', teamsArray);
