@@ -189,6 +189,7 @@ export function useLiveTeams() {
           opponentScore: game.away_score,
           opponent: game.away_team,
           status: game.status
+        });
         
         // Add away team
         teamsArray.push({
@@ -200,6 +201,7 @@ export function useLiveTeams() {
           opponentScore: game.home_score,
           opponent: game.home_team,
           status: game.status
+        });
     }
     
     return teamsArray;
@@ -232,6 +234,7 @@ export function useUpcomingTeams() {
           opponentScore: game.away_score,
           opponent: game.away_team,
           status: game.status
+        });
         
         // Add away team
         teamsArray.push({
@@ -243,6 +246,7 @@ export function useUpcomingTeams() {
           opponentScore: game.home_score,
           opponent: game.home_team,
           status: game.status
+        });
     }
     
     console.log('🏀 useUpcomingTeams - final teams:', teamsArray);
