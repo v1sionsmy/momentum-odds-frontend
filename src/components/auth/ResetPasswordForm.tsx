@@ -19,7 +19,7 @@ export function ResetPasswordForm({ onModeChange }: ResetPasswordFormProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const { resetPassword, validateResetToken } = useAuth();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams?.get('token');
 
   // Validate token on mount
   useEffect(() => {

@@ -23,18 +23,18 @@ const calculateMomentumAbs = (momentum) => {
 };
 
 // Mock prediction data (replace with real ML endpoint data)
-const generateMockPrediction = (playerId, quarter) => {
+const generateMockPrediction = (playerId, _quarter) => {
   const baseStats = {
     pts: Math.floor(Math.random() * 15) + 5,
     reb: Math.floor(Math.random() * 8) + 2,
     ast: Math.floor(Math.random() * 6) + 1
   };
   
-  return `${baseStats.pts} Pts / ${baseStats.reb} Reb / ${baseStats.ast} Ast (Q${quarter})`;
+  return `${baseStats.pts} Pts / ${baseStats.reb} Reb / ${baseStats.ast} Ast (Q${_quarter})`;
 };
 
 // Generate mock player data for testing momentum bands
-const generateMockPlayerData = (_gameId) => {
+const generateMockPlayerData = () => {
   const mockPlayers = [
     { id: '1', name: 'Jayson Tatum', teamId: 'BOS', baseMomentum: 85 },
     { id: '2', name: 'Luka Dončić', teamId: 'DAL', baseMomentum: 78 },
@@ -50,7 +50,7 @@ const generateMockPlayerData = (_gameId) => {
     { id: '12', name: 'Jimmy Butler', teamId: 'MIA', baseMomentum: 5 }
   ];
 
-  return mockPlayers.map((player, _index) => {
+  return mockPlayers.map((player) => {
     // Add some randomness to momentum for more realistic testing
     const variation = (Math.random() - 0.5) * 20;
     const finalMomentum = Math.max(-100, Math.min(100, player.baseMomentum + variation));
@@ -64,7 +64,7 @@ const generateMockPlayerData = (_gameId) => {
       proj: generateMockPrediction(player.id, Math.floor(Math.random() * 4) + 1),
       headshot: `/assets/players/${player.id}.png`,
       // Generate realistic momentum trend
-      momentumTrend: Array.from({ length: 3 }, (_, i) => {
+      momentumTrend: Array.from({ length: 3 }, () => {
         const trendBase = finalMomentum / 100;
         const trendVariation = (Math.random() - 0.5) * 0.3;
         return Math.max(-1, Math.min(1, trendBase + trendVariation));
@@ -75,13 +75,13 @@ const generateMockPlayerData = (_gameId) => {
 
 /**
  * Hook for fetching player momentum data for all players in a game
- * @param {number|null} _gameId - The game ID to fetch player momentum for
+ * @param {number|null} gameId - The game ID to fetch player momentum for
  * @param {number} quarter - Current quarter for predictions
  * @returns {Array} - Array of player momentum objects
  */
-export function usePlayerMomentums(_gameId, quarter = 1) {
+export function usePlayerMomentums(gameId, quarter = 1) {
   const { data, error, isLoading, mutate } = useSWR(
-    _gameId ? `/api/games/${_gameId}/player-momentum` : null,
+    gameId ? `/api/games/${gameId}/player-momentum` : null,
     fetcher,
     {
       refreshInterval: 10000, // Poll every 10 seconds
@@ -89,7 +89,7 @@ export function usePlayerMomentums(_gameId, quarter = 1) {
       revalidateOnReconnect: true,
       dedupingInterval: 5000, // Prevent duplicate requests within 5 seconds
       // For demo purposes, start with mock data if API fails
-      fallbackData: _gameId ? { playerMomentum: {}, players: {} } : null
+      fallbackData: gameId ? { playerMomentum: {}, players: {} } : null
     }
   );
 
@@ -117,9 +117,9 @@ export function usePlayerMomentums(_gameId, quarter = 1) {
         ]
       };
     }).sort((a, b) => b.momentum_abs - a.momentum_abs);
-  } else if (_gameId) {
+  } else if (gameId) {
     // Use mock data for demo/testing when no real data is available
-    transformedData = generateMockPlayerData(_gameId);
+    transformedData = generateMockPlayerData();
   }
 
   return {

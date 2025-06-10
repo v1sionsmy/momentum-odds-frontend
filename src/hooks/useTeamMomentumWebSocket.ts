@@ -188,6 +188,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ws.onerror = (_errorEvent) => {
         console.warn('⚠️ Team Momentum WebSocket connection issue, switching to API mode');
         
@@ -200,7 +201,7 @@ export function useTeamMomentumWebSocket(gameId: number | null) {
         setConnectionStatus('error');
       };
 
-    } catch (err) {
+    } catch {
       console.warn('⚠️ Team Momentum WebSocket unavailable, using fallback mode');
       setError(new Error('WebSocket unavailable - using API fallback'));
       setConnectionStatus('error');
