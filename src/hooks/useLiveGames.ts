@@ -386,7 +386,7 @@ const getTimeUntilGame = (dateString: string): string => {
       const diffMinutes = Math.floor(diffMs / (1000 * 60));
       return `${diffMinutes}m`;
     }
-  } catch (error) {
+  } catch {
     return 'TBD';
   }
 }; 
