@@ -59,7 +59,41 @@ export default function DashboardPage() {
           
     if (!selectedTeam || !opponentTeam) return null;
     
-    // Get momentum data with fallback - only for selected team
+    // Check if this is an upcoming game (not live)
+    const isUpcomingGame = selectedTeam.status === 'SCHEDULED';
+    
+    // For upcoming games, don't show live data
+    if (isUpcomingGame) {
+      return {
+        gameId: selectedGameId,
+        gameTime: null, // No game time for upcoming games
+        quarter: null,  // No quarter for upcoming games
+        isLive: false,
+        isUpcoming: true,
+        selectedTeam: {
+          name: selectedTeam.name,
+          score: 0, // No score for upcoming games
+          color: getTeamColor(selectedTeam.name),
+          momentum: 0, // No momentum for upcoming games
+          isHome: selectedTeam.isHome
+        },
+        opponentTeam: {
+          name: opponentTeam.name,
+          score: 0, // No score for upcoming games
+          color: getTeamColor(opponentTeam.name),
+          momentum: 0, // No momentum for upcoming games
+          isHome: opponentTeam.isHome
+        },
+        odds: {
+          spread: -4.5,
+          total: 218.5,
+          moneyline: { home: -180, away: +155 }
+        },
+        teamInfo: undefined // No live team info for upcoming games
+      };
+    }
+    
+    // For live games, get momentum data with fallback - only for selected team
     const teamMomentumValue = teamMomentum?.teamMomentum?.[selectedTeam.name] || 
                              (0.5 + Math.sin(Date.now() / 10000) * 0.4); // Dynamic fallback for demo
     const opponentMomentumValue = teamMomentum?.teamMomentum?.[opponentTeam.name] || 
@@ -69,7 +103,8 @@ export default function DashboardPage() {
       gameId: selectedGameId,
       gameTime: "7:23",
       quarter: "Q3", 
-      isLive: selectedTeam.status === 'Live',
+      isLive: true,
+      isUpcoming: false,
       selectedTeam: {
         name: selectedTeam.name,
         score: selectedTeam.score || Math.floor(Math.random() * 30) + 70,
@@ -365,7 +400,7 @@ export default function DashboardPage() {
 
         {/* Main Layout: Zone B (Canvas) + Zone C (Info Rail) */}
         <div className="flex flex-1">
-          {/* Zone B: Main Canvas (Clean momentum flash area) */}
+          {/* Zone B: Main Canvas */}
           <div className="flex-1 flex flex-col">
             {/* View Mode Selector - moved up to take more space */}
             {gameData && (
@@ -380,18 +415,61 @@ export default function DashboardPage() {
               </div>
             )}
 
-            <MainCanvas
-              showFlash={flashData.momentum > 0.1}
+            <MainCanvas 
               flashHex={flashData.hex}
               momentum={flashData.momentum}
+              showFlash={!reduceFlashing && gameData?.isLive && !gameData?.isUpcoming}
             >
-              {/* Clean area - only watermarked logo, no text */}
-              <div className="opacity-0">
-                {/* Empty div to maintain space but show nothing - logo comes from MainCanvas */}
-              </div>
+              {gameData?.isUpcoming ? (
+                /* Upcoming Game State */
+                <div className="space-y-6 text-center">
+                  <div className="space-y-2">
+                    <h2 className="text-4xl font-bold text-white">
+                      {gameData.selectedTeam.name}
+                    </h2>
+                    <div className="text-xl text-gray-300">vs</div>
+                    <h2 className="text-4xl font-bold text-white">
+                      {gameData.opponentTeam.name}
+                    </h2>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="text-2xl font-semibold text-blue-400">
+                      🏀 Game Preview
+                    </div>
+                    <div className="text-gray-300 max-w-md mx-auto">
+                      Game analytics will be available once the game starts.
+                      Check back when the game goes live!
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <div className="text-sm text-gray-400">
+                      Analysis will include live momentum tracking, player stats, and real-time odds
+                    </div>
+                  </div>
+                </div>
+              ) : gameData && gameData.isLive ? (
+                /* Live Game State */
+                <div className="space-y-4 text-center">
+                  <h2 className="text-3xl font-bold">Feel the Game</h2>
+                  <p className="text-gray-300 max-w-md">
+                    Watch the pulse of momentum flow through every play, 
+                    every shot, every momentum shift.
+                  </p>
+                </div>
+              ) : (
+                /* Default State */
+                <div className="space-y-4 text-center">
+                  <h2 className="text-3xl font-bold">Momentum Pulse</h2>
+                  <p className="text-gray-300 max-w-md">
+                    Select a game to analyze team momentum and player performance in real-time.
+                  </p>
+                </div>
+              )}
             </MainCanvas>
-              </div>
-              
+          </div>
+          
           {/* Zone C: Right Sidebar (Restructured) */}
           {gameData && (
             <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
@@ -401,18 +479,34 @@ export default function DashboardPage() {
                   <h2 className="text-xl font-bold text-white">
                     {gameData.selectedTeam.name} vs {gameData.opponentTeam.name}
                   </h2>
-                  <div className="text-2xl font-bold text-gray-300 mt-2">
-                    {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
+                  
+                  {gameData.isUpcoming ? (
+                    /* Upcoming Game Display */
+                    <div className="space-y-2 mt-2">
+                      <div className="text-lg font-semibold text-blue-400">
+                        Game Preview
                       </div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    {gameData.quarter} • {gameData.gameTime}
-                    {gameData.isLive && (
-                      <span className="ml-2 inline-flex items-center space-x-1">
-                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="text-red-500 text-xs font-medium">LIVE</span>
-                      </span>
-                    )}
-                  </div>
+                      <div className="text-sm text-gray-400">
+                        Analytics available when game starts
+                      </div>
+                    </div>
+                  ) : (
+                    /* Live Game Display */
+                    <>
+                      <div className="text-2xl font-bold text-gray-300 mt-2">
+                        {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">
+                        {gameData.quarter} • {gameData.gameTime}
+                        {gameData.isLive && (
+                          <span className="ml-2 inline-flex items-center space-x-1">
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-red-500 text-xs font-medium">LIVE</span>
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Current Team Selection Indicator */}
@@ -448,123 +542,167 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Game Status */}
-              <div className="p-4 border-b border-gray-700">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-white">Team Focus</h3>
-                </div>
-                
-                {/* Selected Team (Primary) */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-blue-900/30 border border-blue-500/30">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-5 h-5 rounded-full"
-                        style={{ backgroundColor: gameData.selectedTeam.color }}
-                      />
-                      <span className="text-white font-bold">{gameData.selectedTeam.name}</span>
-                      <span className="text-xs text-blue-400 font-medium">SELECTED</span>
+              {!gameData.isUpcoming ? (
+                /* Live Game Content */
+                <>
+                  {/* Game Status */}
+                  <div className="p-4 border-b border-gray-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold text-white">Team Focus</h3>
                     </div>
-                    <span className="text-white font-bold text-xl">{gameData.selectedTeam.score}</span>
-                  </div>
-                  
-                  {/* Opponent Team (Secondary) */}
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-gray-900/30">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: gameData.opponentTeam.color }}
-                      />
-                      <span className="text-gray-300 font-medium">{gameData.opponentTeam.name}</span>
-                      <span className="text-xs text-gray-500">Opponent</span>
-                    </div>
-                    <span className="text-gray-300 font-bold text-lg">{gameData.opponentTeam.score}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Momentum Tracking */}
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-3">
-                  {view === 'player' && selectedPlayer ? 'Player Momentum' : 'Team Momentum'}
-                </h3>
-                <div className="space-y-3">
-                  {view === 'player' && selectedPlayer ? (
-                    /* Player Momentum Display */
-                    <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-green-300 font-medium">{selectedPlayer.name}</span>
-                        <span className="text-xs text-green-400 font-bold">SELECTED PLAYER</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full transition-all duration-500"
-                            style={{ 
-                              width: `${selectedPlayer.momentum * 100}%`,
-                              backgroundColor: selectedPlayer.color
-                            }}
-                          />
-                        </div>
-                        <span className="text-sm text-white font-bold w-12 text-right">
-                          {(selectedPlayer.momentum * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="mt-2 text-xs text-green-300">
-                        {selectedPlayer.position} • {selectedPlayer.team}
-                      </div>
-                    </div>
-                  ) : (
-                    /* Team Momentum Display */
-                    <>
-                      {/* Selected Team Momentum (Primary) */}
-                      <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-500/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-blue-300 font-medium">{gameData.selectedTeam.name}</span>
-                          <span className="text-xs text-blue-400 font-bold">SELECTED TEAM</span>
-                        </div>
+                    
+                    {/* Selected Team (Primary) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-900/30 border border-blue-500/30">
                         <div className="flex items-center space-x-3">
-                          <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full transition-all duration-500"
-                              style={{ 
-                                width: `${gameData.selectedTeam.momentum * 100}%`,
-                                backgroundColor: gameData.selectedTeam.color
-                              }}
-                            />
-                          </div>
-                          <span className="text-sm text-white font-bold w-12 text-right">
-                            {(gameData.selectedTeam.momentum * 100).toFixed(0)}%
-                          </span>
+                          <div 
+                            className="w-5 h-5 rounded-full"
+                            style={{ backgroundColor: gameData.selectedTeam.color }}
+                          />
+                          <span className="text-white font-bold">{gameData.selectedTeam.name}</span>
+                          <span className="text-xs text-blue-400 font-medium">SELECTED</span>
                         </div>
+                        <span className="text-white font-bold text-xl">{gameData.selectedTeam.score}</span>
                       </div>
+                      
+                      {/* Opponent Team (Secondary) */}
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-gray-900/30">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: gameData.opponentTeam.color }}
+                          />
+                          <span className="text-gray-300 font-medium">{gameData.opponentTeam.name}</span>
+                          <span className="text-xs text-gray-500">Opponent</span>
+                        </div>
+                        <span className="text-gray-300 font-bold text-lg">{gameData.opponentTeam.score}</span>
+                      </div>
+                    </div>
+                  </div>
 
-                      {/* Opponent Momentum (Secondary) */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-400">{gameData.opponentTeam.name}</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-16 h-2 bg-gray-600 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full transition-all duration-500"
-                              style={{ 
-                                width: `${gameData.opponentTeam.momentum * 100}%`,
-                                backgroundColor: gameData.opponentTeam.color
-                              }}
-                            />
+                  {/* Momentum Tracking */}
+                  <div className="p-4 border-b border-gray-700">
+                    <h3 className="text-lg font-semibold text-white mb-3">
+                      {view === 'player' && selectedPlayer ? 'Player Momentum' : 'Team Momentum'}
+                    </h3>
+                    <div className="space-y-3">
+                      {view === 'player' && selectedPlayer ? (
+                        /* Player Momentum Display */
+                        <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-green-300 font-medium">{selectedPlayer.name}</span>
+                            <span className="text-xs text-green-400 font-bold">SELECTED PLAYER</span>
                           </div>
-                          <span className="text-xs text-gray-400 w-8 text-right">
-                            {(gameData.opponentTeam.momentum * 100).toFixed(0)}%
-                          </span>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full transition-all duration-500"
+                                style={{ 
+                                  width: `${selectedPlayer.momentum * 100}%`,
+                                  backgroundColor: selectedPlayer.color
+                                }}
+                              />
+                            </div>
+                            <span className="text-sm text-white font-bold w-12 text-right">
+                              {(selectedPlayer.momentum * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                          <div className="mt-2 text-xs text-green-300">
+                            {selectedPlayer.position} • {selectedPlayer.team}
+                          </div>
                         </div>
+                      ) : (
+                        /* Team Momentum Display */
+                        <>
+                          {/* Selected Team Momentum (Primary) */}
+                          <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-500/30">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm text-blue-300 font-medium">{gameData.selectedTeam.name}</span>
+                              <span className="text-xs text-blue-400 font-bold">SELECTED TEAM</span>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full transition-all duration-500"
+                                  style={{ 
+                                    width: `${gameData.selectedTeam.momentum * 100}%`,
+                                    backgroundColor: gameData.selectedTeam.color
+                                  }}
+                                />
+                              </div>
+                              <span className="text-sm text-white font-bold w-12 text-right">
+                                {(gameData.selectedTeam.momentum * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Opponent Momentum (Secondary) */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-400">{gameData.opponentTeam.name}</span>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-16 h-2 bg-gray-600 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full transition-all duration-500"
+                                  style={{ 
+                                    width: `${gameData.opponentTeam.momentum * 100}%`,
+                                    backgroundColor: gameData.opponentTeam.color
+                                  }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-400 w-8 text-right">
+                                {(gameData.opponentTeam.momentum * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-3">Quick Stats</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Lead Changes</span>
+                        <span className="text-white">7</span>
                       </div>
-                    </>
-                  )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Largest Lead</span>
+                        <span className="text-white">12</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Pace</span>
+                        <span className="text-white">Fast</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Upcoming Game Content */
+                <div className="p-4 flex-1 flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <div className="text-6xl mb-4">⏰</div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold text-white">Game Starts Soon</h3>
+                      <p className="text-gray-400 text-sm max-w-sm">
+                        Live momentum tracking, team stats, and real-time analysis will be available once the game begins.
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <div className="text-xs text-blue-400">
+                        Check back when the game goes live!
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Live Odds */}
-              <div className="p-4 border-b border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-3">Live Odds</h3>
+              {/* Live Odds - Show for both upcoming and live games */}
+              <div className="p-4 border-t border-gray-700">
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  {gameData.isUpcoming ? 'Opening Odds' : 'Live Odds'}
+                </h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-300">Spread</span>
@@ -579,25 +717,6 @@ export default function DashboardPage() {
                     <span className="text-white text-xs">
                       {gameData.odds.moneyline.away} / {gameData.odds.moneyline.home}
                     </span>
-              </div>
-            </div>
-          </div>
-          
-              {/* Quick Stats */}
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-white mb-3">Quick Stats</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Lead Changes</span>
-                    <span className="text-white">7</span>
-                    </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Largest Lead</span>
-                    <span className="text-white">12</span>
-                    </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Pace</span>
-                    <span className="text-white">Fast</span>
                   </div>
                 </div>
               </div>
