@@ -62,10 +62,9 @@ const fetchGames = async (): Promise<Game[]> => {
 
 const fetchUpcomingGames = async (): Promise<Game[]> => {
   try {
-    // Use the same recent games endpoint but filter for upcoming games
-    const data = await api.getScheduledGames(20); // Use dedicated scheduled games endpoint
+    // Use the dedicated scheduled games endpoint
+    const data = await api.getScheduledGames(20);
     console.log('📅 API Response for Upcoming Games:', data);
-    console.log("🔍 API CALL RESULT:", { success: data.success, gamesCount: data.games?.length, data });
     
     if (data.success && Array.isArray(data.games)) {
       const now = new Date();
@@ -81,23 +80,55 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
         away_abbr: game.away_abbr,
         home_score: game.home_score || 0,
         away_score: game.away_score || 0,
-        status: game.home_score > 0 || game.away_score > 0 ? "FINAL" : "SCHEDULED",
+        status: "SCHEDULED",
         date: game.start_time,
         start_time: game.start_time
       }));
       
-      console.log('📅 All transformed games:', allTransformed);
-      
-      // Backend already provides scheduled games - no client-side filtering needed
-      
-      console.log("📅 Final upcoming games:", allTransformed);
+      console.log('📅 All transformed upcoming games:', allTransformed);
       return allTransformed;
     }
     
+    console.warn('📅 No upcoming games data in API response');
     return [];
   } catch (error) {
     console.error('❌ Failed to fetch upcoming games from backend:', error);
-    throw error; // No mock data fallback
+    
+    // If the scheduled endpoint fails, try falling back to recent games and filter
+    try {
+      console.log('📅 Trying fallback to recent games endpoint...');
+      const fallbackData = await api.getRecentGames(30);
+      
+      if (fallbackData.success && Array.isArray(fallbackData.games)) {
+        const now = new Date();
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const upcomingOnly = fallbackData.games.filter((game: any) => {
+          const gameDate = new Date(game.start_time);
+          return gameDate > now;
+        }).map((game: any) => ({
+          id: game.id,
+          api_game_id: game.id,
+          home_team: game.home_team,
+          away_team: game.away_team,
+          home_abbr: game.home_abbr,
+          away_abbr: game.away_abbr,
+          home_score: game.home_score || 0,
+          away_score: game.away_score || 0,
+          status: "SCHEDULED",
+          date: game.start_time,
+          start_time: game.start_time
+        }));
+        
+        console.log('📅 Fallback upcoming games:', upcomingOnly);
+        return upcomingOnly;
+      }
+    } catch (fallbackError) {
+      console.error('❌ Fallback also failed:', fallbackError);
+    }
+    
+    // Final fallback: return empty array instead of throwing
+    return [];
   }
 };
 
@@ -262,4 +293,101 @@ export function useUpcomingTeams() {
     isLoading,
     error,
   };
-} 
+}
+
+// Simple hook for upcoming games (returns games, not teams)
+export function useUpcomingGamesSimple() {
+  const { data: games, isLoading, error } = useUpcomingGames();
+  
+  const formattedGames = useMemo(() => {
+    if (!Array.isArray(games)) return [];
+    
+    return games.map(game => ({
+      ...game,
+      formattedDate: formatGameDate(game.start_time),
+      timeUntilGame: getTimeUntilGame(game.start_time)
+    }));
+  }, [games]);
+  
+  return {
+    data: formattedGames,
+    isLoading,
+    error,
+  };
+}
+
+// Simple hook for live games (returns games, not teams)  
+export function useLiveGamesSimple() {
+  const { data: games, isLoading, error } = useLiveGames();
+  
+  return {
+    data: games || [],
+    isLoading,
+    error,
+  };
+}
+
+// Helper function to format game date
+const formatGameDate = (dateString: string): string => {
+  try {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    
+    // Check if it's today
+    if (date.toDateString() === today.toDateString()) {
+      return `Today ${date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
+    
+    // Check if it's tomorrow
+    if (date.toDateString() === tomorrow.toDateString()) {
+      return `Tomorrow ${date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })}`;
+    }
+    
+    // Otherwise show date and time
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (error) {
+    console.error('Error formatting date:', dateString, error);
+    return 'TBD';
+  }
+};
+
+// Helper function to get time until game
+const getTimeUntilGame = (dateString: string): string => {
+  try {
+    const gameDate = new Date(dateString);
+    const now = new Date();
+    const diffMs = gameDate.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Started';
+    
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return `${diffDays}d ${diffHours % 24}h`;
+    } else if (diffHours > 0) {
+      return `${diffHours}h`;
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      return `${diffMinutes}m`;
+    }
+  } catch (error) {
+    return 'TBD';
+  }
+}; 

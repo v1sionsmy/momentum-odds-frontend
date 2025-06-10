@@ -18,7 +18,7 @@ export default function MainCanvas({
   children 
 }: MainCanvasProps) {
   return (
-    <div className="relative grow flex items-center justify-center bg-gray-800 overflow-hidden">
+    <div className="relative grow flex items-center justify-center bg-gray-950 overflow-hidden">
       {/* Momentum Flash Overlay */}
       {showFlash && <MomentumFlash hex={flashHex} momentum={momentum} />}
       
@@ -27,9 +27,9 @@ export default function MainCanvas({
         <Image
           src={watermarkLogo}
           alt="Momentum Odds"
-          width={400}
-          height={240}
-          className="opacity-10 pointer-events-none"
+          width={600}
+          height={360}
+          className="opacity-25 pointer-events-none"
           priority
         />
       </div>

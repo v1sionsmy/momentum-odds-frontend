@@ -408,6 +408,153 @@ const GamesSidebar: React.FC<GamesSidebarProps> = ({
     );
   }
 
+  // Show games selection when viewLevel is 'team' but no game is selected
+  if (viewLevel === 'team' && !selectedGameId) {
+    const allTeams = [...liveTeams, ...upcomingTeams];
+    const games = Array.from(new Set(allTeams.map(team => team.gameId)))
+      .map(gameId => ({
+        gameId,
+        teams: allTeams.filter(team => team.gameId === gameId),
+        isLive: allTeams.filter(team => team.gameId === gameId).some(team => 
+          liveTeams.find(liveTeam => liveTeam.id === team.id)
+        )
+      }));
+    
+    // Separate live and upcoming games
+    const liveGames = games.filter(game => game.isLive);
+    const upcomingGames = games.filter(game => !game.isLive);
+    
+    const renderGame = (gameData: typeof games[0]) => {
+      const { gameId, teams, isLive } = gameData;
+      const gameHasMomentum = teams.some(team => momentumPulse[`team-${team.id}`]);
+
+      return (
+        <div
+          key={gameId}
+          className="relative group cursor-pointer"
+          onClick={() => onGameSelect(gameId)}
+        >
+          <div className={`relative transform transition-all duration-300 hover:scale-[1.01]`}>
+            <div className={`bg-gradient-to-br from-gray-800/90 to-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-300`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                    isLive 
+                      ? 'bg-emerald-100 border border-emerald-200' 
+                      : 'bg-gray-100 border border-gray-200'
+                  }`}>
+                    {isLive ? (
+                      <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                    ) : (
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                    )}
+                  </div>
+                  
+                  <div>
+                    <div className="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors duration-300">
+                      {teams.length >= 2 ? `${teams[0].name} vs ${teams[1].name}` : `Game #${gameId}`}
+                    </div>
+                    <div className={`text-xs font-medium ${
+                      isLive ? 'text-emerald-400' : 'text-gray-400'
+                    }`}>
+                      {isLive ? 'LIVE NOW' : 'UPCOMING'}
+                    </div>
+                  </div>
+                </div>
+
+                {gameHasMomentum && (
+                  <div className="flex items-center space-x-1 px-2 py-1 bg-emerald-100 rounded-lg border border-emerald-200">
+                    <Zap className="w-3 h-3 text-emerald-600" />
+                    <span className="text-emerald-700 text-xs font-medium">HIGH</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Teams Display */}
+              <div className="space-y-2">
+                {teams.slice(0, 2).map((team) => {
+                  const colors = getTeamColor(team.name);
+                  const isPulsing = momentumPulse[`team-${team.id}`];
+
+                  return (
+                    <div key={team.id} className="flex items-center justify-between p-2 bg-gray-700/30 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-6 h-6 rounded-full"
+                          style={{ backgroundColor: colors.primary }}
+                        />
+                        <span className="text-white font-medium">{team.name}</span>
+                        {team.isHome && (
+                          <span className="text-xs text-gray-400">HOME</span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        {team.score !== undefined && (
+                          <span className="text-white font-bold">{team.score}</span>
+                        )}
+                        {isPulsing && (
+                          <div className="flex items-center space-x-1">
+                            <Activity className="w-3 h-3 text-emerald-600 animate-pulse" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action indicator */}
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-700">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-3 h-3 text-gray-400" />
+                  <span className="text-xs text-gray-400">Click to analyze</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-600 transition-colors duration-300" />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="space-y-3">
+        {/* Show message if no games available */}
+        {games.length === 0 && (
+          <div className="text-center py-8">
+            <div className="text-gray-400 mb-2">No games available</div>
+            <div className="text-sm text-gray-500">
+              {isLoading ? 'Loading games...' : 'Check back later for upcoming games'}
+            </div>
+          </div>
+        )}
+        
+        {/* Live Games */}
+        {liveGames.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold text-red-400 mb-2 flex items-center">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+              LIVE GAMES
+            </h4>
+            {liveGames.map(renderGame)}
+          </div>
+        )}
+        
+        {/* Upcoming Games */}
+        {upcomingGames.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-blue-400 mb-2 flex items-center">
+              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+              UPCOMING GAMES
+            </h4>
+            {upcomingGames.map(renderGame)}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (viewLevel === 'player' && teamPlayers) {
       return (
       <div className="space-y-4">

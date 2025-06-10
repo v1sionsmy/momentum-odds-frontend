@@ -1,30 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTeamMomentumWebSocket } from "./useTeamMomentumWebSocket";
+import { api } from '../lib/api';
 
 // Types for team momentum data
 interface TeamMomentum {
   teamMomentum: Record<string, number>;
   playerMomentum?: Record<string, number>;
 }
-
-// Fallback API configuration
-const API_CONFIG = {
-  development: 'http://localhost:8000',
-  production: "https://nba-analytics-api.onrender.com"
-};
-
-const LEGACY_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
-
-// API utility for fallback calls
-const api = {
-  get: async (url: string) => {
-    const response = await fetch(`${LEGACY_BASE_URL}/api${url}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return { data: await response.json() };
-  }
-};
 
 export function useTeamMomentum(gameId: number | null) {
   // Primary WebSocket connection
@@ -49,13 +31,14 @@ export function useTeamMomentum(gameId: number | null) {
   const isLoadingTeamMom = shouldUseFallback ? fallbackLoading : wsLoading;
   const errorTeamMom = shouldUseFallback ? fallbackError : wsError;
 
-  // Fallback API call
+  // Fallback API call using the unified API client
   const fetchFallbackData = useCallback(async (gameId: number) => {
     try {
       setFallbackLoading(true);
       setFallbackError(null);
-      const resp = await api.get(`/games/${gameId}/momentum`);
-      setFallbackData(resp.data);
+      // Use the unified API client for momentum analysis
+      const resp = await api.analyzeMomentum(gameId);
+      setFallbackData(resp);
     } catch (e) {
       setFallbackError(e instanceof Error ? e : new Error('Unknown error'));
     } finally {

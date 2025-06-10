@@ -7,30 +7,39 @@ interface TopBarProps {
   onSettingsToggle?: () => void;
   reduceFlashing?: boolean;
   onFlashingToggle?: () => void;
+  hasGameSelected?: boolean;
 }
 
 export default function TopBar({ 
-  isLive = true, 
+  isLive = false, 
   gameTime = "12:00", 
   quarter = "Q1",
   onSettingsToggle,
   reduceFlashing = false,
-  onFlashingToggle
+  onFlashingToggle,
+  hasGameSelected = false
 }: TopBarProps) {
   return (
     <div className="flex justify-between items-center h-12 bg-gray-900/80 backdrop-blur px-4">
-      {/* Left: LIVE badge and game info */}
+      {/* Left: LIVE badge and game info - only show when game is selected */}
       <div className="flex items-center space-x-3">
-        {isLive && (
+        {hasGameSelected && isLive && (
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <span className="text-red-500 font-semibold text-sm">LIVE</span>
           </div>
         )}
-        <div className="text-white text-sm">
-          <span className="font-mono">{gameTime}</span>
-          <span className="ml-2 text-gray-300">{quarter}</span>
-        </div>
+        {hasGameSelected && (
+          <div className="text-white text-sm">
+            <span className="font-mono">{gameTime}</span>
+            <span className="ml-2 text-gray-300">{quarter}</span>
+          </div>
+        )}
+        {!hasGameSelected && (
+          <div className="text-gray-400 text-sm">
+            Select a game to analyze
+          </div>
+        )}
       </div>
 
       {/* Center: Logo or Title */}

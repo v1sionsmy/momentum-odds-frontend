@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useLiveTeams, useUpcomingTeams } from '@/hooks/useLiveGames';
+import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
 import { useTeamMomentum } from '@/hooks/useTeamMomentum';
 import TopBar from '@/components/TopBar';
@@ -17,35 +17,24 @@ export default function DashboardPage() {
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [reduceFlashing, setReduceFlashing] = useState(false);
 
-  // Data hooks
+  // Data hooks - using both simple (for games) and team hooks (for team analysis)
   const { data: liveTeams, isLoading: isLoadingLiveTeams } = useLiveTeams();
   const { data: upcomingTeams, isLoading: isLoadingUpcomingTeams } = useUpcomingTeams();
+  const { data: upcomingGames, isLoading: isLoadingUpcomingGames } = useUpcomingGamesSimple();
+  const { data: liveGames, isLoading: isLoadingLiveGames } = useLiveGamesSimple();
   const { teamMomentum } = useTeamMomentum(selectedGameId);
   const { teamPlayers } = useTeamPlayers(selectedGameId, null);
 
-  // Filter upcoming teams to only show games within 3 days
-  const filteredUpcomingTeams = upcomingTeams?.filter(team => {
-    if (!team || !upcomingTeams) return false;
-    
-    // Find the original game for this team to get the start_time
-    const allGames = [...(liveTeams || []), ...(upcomingTeams || [])];
-    const sampleTeam = allGames.find(t => t.gameId === team.gameId);
-    
-    if (!sampleTeam) return false;
-    
-    // For now, let's check if we can access the game data through the hook
-    // The upcoming games hook already filters by date, so let's limit by count for now
-    const today = new Date();
-    const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(today.getDate() + 3);
-    
-    // Since the underlying useUpcomingGames already filters future games,
-    // we'll trust that filtering and just limit the display
-    return true;
-  }) || [];
-
-  // Additionally, limit to first 20 teams (10 games) to avoid showing too many
-  const limitedUpcomingTeams = filteredUpcomingTeams.slice(0, 20);
+  console.log('🎮 Dashboard Debug:', {
+    upcomingGames: upcomingGames?.length || 0,
+    liveGames: liveGames?.length || 0,
+    upcomingTeams: upcomingTeams?.length || 0,
+    liveTeams: liveTeams?.length || 0,
+    selectedGameId,
+    selectedTeamId,
+    isLoadingGames: isLoadingUpcomingGames || isLoadingLiveGames,
+    isLoadingTeams: isLoadingUpcomingTeams || isLoadingLiveTeams
+  });
 
   // Apply reduced motion settings
   useEffect(() => {
@@ -63,7 +52,7 @@ export default function DashboardPage() {
   const getTeamData = () => {
     if (!selectedTeamId || !selectedGameId) return null;
     
-    const allTeams = [...(liveTeams || []), ...limitedUpcomingTeams];
+    const allTeams = [...(liveTeams || []), ...(upcomingTeams || [])];
     const selectedTeam = allTeams.find(team => team.id === selectedTeamId);
     const opponentTeam = allTeams.find(team => 
       team.gameId === selectedGameId && team.id !== selectedTeamId
@@ -207,55 +196,172 @@ export default function DashboardPage() {
       </div>
       
         {/* Live Games Section */}
-        {liveTeams && liveTeams.length > 0 && (
+        {liveGames && liveGames.length > 0 && (
           <div className="border-b border-gray-700">
             <div className="p-3 bg-red-900/20">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <h3 className="text-sm font-semibold text-red-400">LIVE GAMES</h3>
-      </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Upcoming Games Section */}
-        {limitedUpcomingTeams && limitedUpcomingTeams.length > 0 && (
-          <div className="border-b border-gray-700">
-            <div className="p-3 bg-blue-900/20">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <h3 className="text-sm font-semibold text-blue-400">UPCOMING GAMES</h3>
+                <h3 className="text-sm font-semibold text-red-400">LIVE GAMES ({liveGames.length})</h3>
               </div>
             </div>
           </div>
         )}
         
-        <div className="flex-1 overflow-y-auto">
-          <GamesSidebar
-            viewLevel="team"
-            liveTeams={liveTeams || []}
-            upcomingTeams={limitedUpcomingTeams}
-            teamPlayers={teamPlayers}
-            isLoading={isLoadingLiveTeams || isLoadingUpcomingTeams}
-            selectedGameId={selectedGameId}
-            selectedTeamId={selectedTeamId}
-            selectedPlayerId={null}
-            onGameSelect={() => {}}
-            onTeamSelect={(teamId) => {
-              const allTeams = [...(liveTeams || []), ...limitedUpcomingTeams];
-              const team = allTeams.find(t => t.id === teamId);
-              if (team) {
-                setSelectedTeamId(teamId);
-                setSelectedGameId(team.gameId);
-                setSelectedPlayer(null);
-                setView('team');
-              }
-            }}
-            onPlayerSelect={() => {}}
-            momentumPulse={{}}
-            mlPulse={{}}
-            teamColors={getTeamColors()}
-          />
+        {/* Upcoming Games Section */}
+        {upcomingGames && upcomingGames.length > 0 && (
+          <div className="border-b border-gray-700">
+            <div className="p-3 bg-blue-900/20">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <h3 className="text-sm font-semibold text-blue-400">UPCOMING GAMES ({upcomingGames.length})</h3>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Simple Game List */}
+          <div className="space-y-3">
+            {/* Live Games */}
+            {liveGames && liveGames.map(game => (
+              <div
+                key={`live-${game.id}`}
+                className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                  selectedGameId === game.id
+                    ? 'border-red-500 bg-red-900/20 shadow-lg'
+                    : 'border-gray-600 bg-gray-800/50 hover:border-red-400 hover:bg-red-900/10'
+                }`}
+                onClick={() => {
+                  setSelectedGameId(game.id);
+                  // Auto-select first team when selecting a game
+                  const teams = [...(liveTeams || [])].filter(t => t.gameId === game.id);
+                  if (teams.length > 0) {
+                    setSelectedTeamId(teams[0].id);
+                  }
+                  setView('team');
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span className="text-red-400 text-xs font-bold">LIVE</span>
+                  </div>
+                  <div className="text-xs text-gray-400">Game #{game.id}</div>
+                </div>
+                
+                <div className="text-center mb-2">
+                  <div className="text-white font-bold">
+                    {game.away_team} @ {game.home_team}
+                  </div>
+                  <div className="text-sm text-gray-300 mt-1">
+                    {game.away_score} - {game.home_score}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <span className="text-xs text-gray-400">Click to analyze momentum</span>
+                </div>
+              </div>
+            ))}
+            
+            {/* Upcoming Games */}
+            {upcomingGames && upcomingGames.map(game => (
+              <div
+                key={`upcoming-${game.id}`}
+                className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                  selectedGameId === game.id
+                    ? 'border-blue-500 bg-blue-900/20 shadow-lg'
+                    : 'border-gray-600 bg-gray-800/50 hover:border-blue-400 hover:bg-blue-900/10'
+                }`}
+                onClick={() => {
+                  setSelectedGameId(game.id);
+                  // Auto-select first team when selecting a game
+                  const teams = [...(upcomingTeams || [])].filter(t => t.gameId === game.id);
+                  if (teams.length > 0) {
+                    setSelectedTeamId(teams[0].id);
+                  }
+                  setView('team');
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-blue-400 text-xs font-bold">UPCOMING</span>
+                  </div>
+                  <div className="text-xs text-gray-400">{game.timeUntilGame}</div>
+                </div>
+                
+                <div className="text-center mb-2">
+                  <div className="text-white font-bold">
+                    {game.away_team} @ {game.home_team}
+                  </div>
+                  <div className="text-sm text-blue-300 mt-1">
+                    {game.formattedDate}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <span className="text-xs text-gray-400">Click to analyze</span>
+                </div>
+              </div>
+            ))}
+            
+            {/* No Games Available */}
+            {(!liveGames || liveGames.length === 0) && (!upcomingGames || upcomingGames.length === 0) && (
+              <div className="text-center py-8">
+                <div className="text-gray-400 mb-2">No games available</div>
+                <div className="text-sm text-gray-500">
+                  {(isLoadingLiveGames || isLoadingUpcomingGames) ? 'Loading...' : 'Check back later'}
+                </div>
+              </div>
+            )}
+            
+            {/* Team Selector - appears when game is selected */}
+            {selectedGameId && (
+              <div className="mt-6 pt-4 border-t border-gray-700">
+                <h4 className="text-sm font-semibold text-gray-300 mb-3">SELECT TEAM TO ANALYZE</h4>
+                <div className="space-y-2">
+                  {[...(liveTeams || []), ...(upcomingTeams || [])]
+                    .filter(team => team.gameId === selectedGameId)
+                    .map(team => (
+                      <div
+                        key={team.id}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                          selectedTeamId === team.id
+                            ? 'border-green-500 bg-green-900/20 shadow-lg'
+                            : 'border-gray-600 bg-gray-800/30 hover:border-green-400 hover:bg-green-900/10'
+                        }`}
+                        onClick={() => {
+                          setSelectedTeamId(team.id);
+                          setView('team');
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="text-white font-medium">{team.name}</div>
+                            {team.isHome && (
+                              <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">HOME</span>
+                            )}
+                          </div>
+                          {/* Only show score for live games, not upcoming */}
+                          {liveGames?.some(game => game.id === selectedGameId) && (
+                            <div className="text-gray-300 font-bold">{team.score}</div>
+                          )}
+                        </div>
+                        
+                        {selectedTeamId === team.id && (
+                          <div className="mt-2 pt-2 border-t border-green-500/30">
+                            <div className="text-xs text-green-400">
+                              ✓ Selected for analysis
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -269,6 +375,7 @@ export default function DashboardPage() {
           reduceFlashing={reduceFlashing}
           onFlashingToggle={() => setReduceFlashing(!reduceFlashing)}
           onSettingsToggle={() => {/* Settings functionality could be added here */}}
+          hasGameSelected={!!selectedGameId}
         />
 
         {/* Main Layout: Zone B (Canvas) + Zone C (Info Rail) */}
@@ -393,50 +500,82 @@ export default function DashboardPage() {
 
               {/* Momentum Tracking */}
               <div className="p-4 border-b border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-3">Team Momentum</h3>
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  {view === 'player' && selectedPlayer ? 'Player Momentum' : 'Team Momentum'}
+                </h3>
                 <div className="space-y-3">
-                  {/* Selected Team Momentum (Primary) */}
-                  <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-blue-300 font-medium">{gameData.selectedTeam.name}</span>
-                      <span className="text-xs text-blue-400 font-bold">SELECTED TEAM</span>
+                  {view === 'player' && selectedPlayer ? (
+                    /* Player Momentum Display */
+                    <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-green-300 font-medium">{selectedPlayer.name}</span>
+                        <span className="text-xs text-green-400 font-bold">SELECTED PLAYER</span>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full transition-all duration-500"
+                            style={{ 
+                              width: `${selectedPlayer.momentum * 100}%`,
+                              backgroundColor: selectedPlayer.color
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm text-white font-bold w-12 text-right">
+                          {(selectedPlayer.momentum * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="mt-2 text-xs text-green-300">
+                        {selectedPlayer.position} • {selectedPlayer.team}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full transition-all duration-500"
-                          style={{ 
-                            width: `${gameData.selectedTeam.momentum * 100}%`,
-                            backgroundColor: gameData.selectedTeam.color
-                          }}
-                        />
+                  ) : (
+                    /* Team Momentum Display */
+                    <>
+                      {/* Selected Team Momentum (Primary) */}
+                      <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-500/30">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-blue-300 font-medium">{gameData.selectedTeam.name}</span>
+                          <span className="text-xs text-blue-400 font-bold">SELECTED TEAM</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-1 h-3 bg-gray-600 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full transition-all duration-500"
+                              style={{ 
+                                width: `${gameData.selectedTeam.momentum * 100}%`,
+                                backgroundColor: gameData.selectedTeam.color
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm text-white font-bold w-12 text-right">
+                            {(gameData.selectedTeam.momentum * 100).toFixed(0)}%
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-sm text-white font-bold w-12 text-right">
-                        {(gameData.selectedTeam.momentum * 100).toFixed(0)}%
-                      </span>
-            </div>
-          </div>
 
-                  {/* Opponent Momentum (Secondary) */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-400">{gameData.opponentTeam.name}</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-16 h-2 bg-gray-600 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full transition-all duration-500"
-                          style={{ 
-                            width: `${gameData.opponentTeam.momentum * 100}%`,
-                            backgroundColor: gameData.opponentTeam.color
-                          }}
-                        />
+                      {/* Opponent Momentum (Secondary) */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-400">{gameData.opponentTeam.name}</span>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-16 h-2 bg-gray-600 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full transition-all duration-500"
+                              style={{ 
+                                width: `${gameData.opponentTeam.momentum * 100}%`,
+                                backgroundColor: gameData.opponentTeam.color
+                              }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-400 w-8 text-right">
+                            {(gameData.opponentTeam.momentum * 100).toFixed(0)}%
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-xs text-gray-400 w-8 text-right">
-                        {(gameData.opponentTeam.momentum * 100).toFixed(0)}%
-                      </span>
-          </div>
-        </div>
+                    </>
+                  )}
                 </div>
-                  </div>
+              </div>
 
               {/* Live Odds */}
               <div className="p-4 border-b border-gray-700">

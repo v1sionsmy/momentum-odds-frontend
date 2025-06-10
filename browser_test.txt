@@ -1,0 +1,1 @@
+fetch('https://nba-analytics-api.onrender.com/api/v1/games/scheduled?limit=10').then(r=>r.json()).then(d=>console.log('API TEST:',d))
