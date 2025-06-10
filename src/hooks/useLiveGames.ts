@@ -248,6 +248,7 @@ export function useUpcomingTeams() {
           opponent: game.home_team,
           status: game.status
         });
+    });
     }
     
     console.log('🏀 useUpcomingTeams - final teams:', teamsArray);
