@@ -63,7 +63,7 @@ const fetchGames = async (): Promise<Game[]> => {
 const fetchUpcomingGames = async (): Promise<Game[]> => {
   try {
     // Use the same recent games endpoint but filter for upcoming games
-    const data = await api.getRecentGames(20); // Get more games to find upcoming ones
+    const data = await api.getScheduledGames(20); // Use dedicated scheduled games endpoint
     console.log('📅 API Response for Upcoming Games:', data);
     
     if (data.success && Array.isArray(data.games)) {

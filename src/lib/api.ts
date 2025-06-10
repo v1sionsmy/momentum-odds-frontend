@@ -77,6 +77,10 @@ class NBAAnalyticsAPI {
   async getRecentGames(limit = 10) {
     return this.request(`/api/v1/games/recent?limit=${limit}`);
   }
+  // Scheduled Games
+  async getScheduledGames(limit = 10) {
+    return this.request(`/api/v1/games/scheduled?limit=${limit}`);
+  }
 
   // Featured Game (most recent with complete data)
   async getFeaturedGame() {
