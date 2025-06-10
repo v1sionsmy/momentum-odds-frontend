@@ -7,7 +7,6 @@ import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
 import ViewModeSelector from '@/components/ViewModeSelector';
-import GamesSidebar from '@/components/GamesSidebar';
 
 export default function DashboardPage() {
   // Core state
@@ -110,20 +109,6 @@ export default function DashboardPage() {
       "Indiana Pacers": "#002D62"
     };
     return colorMap[teamName] || "#059669";
-  };
-
-  // Team colors for GamesSidebar (with primary, secondary, glow structure)
-  const getTeamColors = () => {
-    const teamColors: Record<string, { primary: string; secondary: string; glow: string }> = {
-      "Boston Celtics": { primary: "#007A33", secondary: "#10B981", glow: "rgba(0, 122, 51, 0.4)" },
-      "Los Angeles Lakers": { primary: "#552583", secondary: "#8B5CF6", glow: "rgba(85, 37, 131, 0.4)" },
-      "Golden State Warriors": { primary: "#1D428A", secondary: "#3B82F6", glow: "rgba(29, 66, 138, 0.4)" },
-      "Miami Heat": { primary: "#98002E", secondary: "#EF4444", glow: "rgba(152, 0, 46, 0.4)" },
-      "Oklahoma City Thunder": { primary: "#007AC1", secondary: "#06B6D4", glow: "rgba(0, 122, 193, 0.4)" },
-      "Indiana Pacers": { primary: "#002D62", secondary: "#1E40AF", glow: "rgba(0, 45, 98, 0.4)" },
-      "Default": { primary: "#059669", secondary: "#10B981", glow: "rgba(5, 150, 105, 0.4)" }
-    };
-    return teamColors;
   };
 
   // Generate player data from teamPlayers

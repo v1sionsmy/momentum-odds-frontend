@@ -1,6 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { api } from '../lib/api';
+import { api } from '@/lib/api';
+
+// Define API response types
+interface APIGame {
+  id: number;
+  home_team: string;
+  away_team: string;
+  home_abbr?: string;
+  away_abbr?: string;
+  home_score: number;
+  away_score: number;
+  start_time: string;
+  last_momentum_update?: string;
+}
 
 export interface Game {
   id: number;
@@ -29,13 +42,12 @@ export interface Team {
 
 const fetchGames = async (): Promise<Game[]> => {
   try {
-    const data = await api.getRecentGames(10);
-    console.log('🎮 API Response for Recent Games:', data);
+    console.log('🔄 Fetching all games...');
+    const data = await api.getRecentGames(20);
+    console.log('🔄 All Games API Response:', data);
     
     if (data.success && Array.isArray(data.games)) {
-      // Transform the API response to match our Game interface
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const transformedGames = data.games.map((game: any) => ({
+      const games = data.games.map((game: APIGame) => ({
         id: game.id,
         api_game_id: game.id,
         home_team: game.home_team,
@@ -44,34 +56,30 @@ const fetchGames = async (): Promise<Game[]> => {
         away_abbr: game.away_abbr,
         home_score: game.home_score || 0,
         away_score: game.away_score || 0,
-        status: game.home_score > 0 || game.away_score > 0 ? "FINAL" : "SCHEDULED", // Simple status logic
+        status: "completed",
         date: game.start_time,
         start_time: game.start_time
       }));
       
-      console.log('🎮 Transformed Games:', transformedGames);
-      return transformedGames;
+      console.log('✅ All games fetched successfully:', games.length, 'games');
+      return games;
     }
     
-    return [];
+    throw new Error('Invalid response format');
   } catch (error) {
-    console.error('❌ Failed to fetch games from backend:', error);
-    throw error; // Don't fallback to mock data - let the app handle the error
+    console.error('❌ Failed to fetch all games:', error);
+    throw error;
   }
 };
 
 const fetchUpcomingGames = async (): Promise<Game[]> => {
   try {
-    // Use the dedicated scheduled games endpoint
-    const data = await api.getScheduledGames(20);
-    console.log('📅 API Response for Upcoming Games:', data);
+    console.log('📅 Fetching upcoming games...');
+    const data = await api.getScheduledGames(10);
+    console.log('📅 Upcoming Games API Response:', data);
     
     if (data.success && Array.isArray(data.games)) {
-      const now = new Date();
-      console.log('📅 Current time:', now.toISOString());
-      
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const allTransformed = data.games.map((game: any) => ({
+      const games = data.games.map((game: APIGame) => ({
         id: game.id,
         api_game_id: game.id,
         home_team: game.home_team,
@@ -85,28 +93,25 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
         start_time: game.start_time
       }));
       
-      console.log('📅 All transformed upcoming games:', allTransformed);
-      return allTransformed;
+      console.log('✅ Upcoming games fetched successfully:', games.length, 'games');
+      return games;
     }
     
-    console.warn('📅 No upcoming games data in API response');
-    return [];
+    throw new Error('Invalid response format');
   } catch (error) {
-    console.error('❌ Failed to fetch upcoming games from backend:', error);
+    console.error('❌ Failed to fetch upcoming games, trying fallback:', error);
     
-    // If the scheduled endpoint fails, try falling back to recent games and filter
+    // Fallback: try to get upcoming games from recent endpoint
     try {
-      console.log('📅 Trying fallback to recent games endpoint...');
       const fallbackData = await api.getRecentGames(30);
       
       if (fallbackData.success && Array.isArray(fallbackData.games)) {
         const now = new Date();
         
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const upcomingOnly = fallbackData.games.filter((game: any) => {
+        const upcomingOnly = fallbackData.games.filter((game: APIGame) => {
           const gameDate = new Date(game.start_time);
           return gameDate > now;
-        }).map((game: any) => ({
+        }).map((game: APIGame) => ({
           id: game.id,
           api_game_id: game.id,
           home_team: game.home_team,
@@ -140,8 +145,7 @@ const fetchLiveGames = async (): Promise<Game[]> => {
     
     if (data.success && Array.isArray(data.live_games)) {
       // Transform live games response
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const liveGames = data.live_games.map((game: any) => ({
+      const liveGames = data.live_games.map((game: APIGame) => ({
         id: game.id,
         api_game_id: game.id,
         home_team: game.home_team,
@@ -187,9 +191,8 @@ export function useUpcomingGames() {
     refetchInterval: 5 * 60 * 1000, // Only refetch every 5 minutes
   });
   
-  
-  return result;
   console.log('🔮 useUpcomingGames result:', result);
+  return result;
 }
 
 export function useLiveGames() {
@@ -204,7 +207,7 @@ export function useLiveGames() {
 }
 
 export function useLiveTeams() {
-  const { data: games, isLoading, error } = useLiveGames();
+  const { data: games, isLoading } = useLiveGames();
   
   const teams: Team[] = useMemo(() => {
     const teamsArray: Team[] = [];
@@ -243,14 +246,13 @@ export function useLiveTeams() {
   return {
     data: teams,
     isLoading,
-    error,
   };
 }
 
 export function useUpcomingTeams() {
-  const { data: games, isLoading, error } = useUpcomingGames();
+  const { data: games, isLoading } = useUpcomingGames();
   
-  console.log("🏀 useUpcomingTeams - DEBUG:", { games, isLoading, error, gamesLength: games?.length });
+  console.log("🏀 useUpcomingTeams - DEBUG:", { games, isLoading, gamesLength: games?.length });
   const teams: Team[] = useMemo(() => {
     console.log('🏀 useUpcomingTeams - processing games:', games);
     
@@ -291,13 +293,12 @@ export function useUpcomingTeams() {
   return {
     data: teams,
     isLoading,
-    error,
   };
 }
 
 // Simple hook for upcoming games (returns games, not teams)
 export function useUpcomingGamesSimple() {
-  const { data: games, isLoading, error } = useUpcomingGames();
+  const { data: games, isLoading } = useUpcomingGames();
   
   const formattedGames = useMemo(() => {
     if (!Array.isArray(games)) return [];
@@ -312,18 +313,16 @@ export function useUpcomingGamesSimple() {
   return {
     data: formattedGames,
     isLoading,
-    error,
   };
 }
 
 // Simple hook for live games (returns games, not teams)  
 export function useLiveGamesSimple() {
-  const { data: games, isLoading, error } = useLiveGames();
+  const { data: games, isLoading } = useLiveGames();
   
   return {
     data: games || [],
     isLoading,
-    error,
   };
 }
 
