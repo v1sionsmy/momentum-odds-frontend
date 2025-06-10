@@ -65,6 +65,7 @@ const fetchUpcomingGames = async (): Promise<Game[]> => {
     // Use the same recent games endpoint but filter for upcoming games
     const data = await api.getScheduledGames(20); // Use dedicated scheduled games endpoint
     console.log('📅 API Response for Upcoming Games:', data);
+    console.log("🔍 API CALL RESULT:", { success: data.success, gamesCount: data.games?.length, data });
     
     if (data.success && Array.isArray(data.games)) {
       const now = new Date();
@@ -218,6 +219,7 @@ export function useLiveTeams() {
 export function useUpcomingTeams() {
   const { data: games, isLoading, error } = useUpcomingGames();
   
+  console.log("🏀 useUpcomingTeams - DEBUG:", { games, isLoading, error, gamesLength: games?.length });
   const teams: Team[] = useMemo(() => {
     console.log('🏀 useUpcomingTeams - processing games:', games);
     
