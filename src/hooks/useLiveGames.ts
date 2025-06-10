@@ -142,6 +142,7 @@ export function useAllGames() {
     gcTime: 10 * 60 * 1000, // 10 minutes cache
     refetchOnWindowFocus: false, // Stop aggressive refetching
     refetchInterval: 60 * 1000, // Only refetch every 60 seconds if needed
+  });
 }
 
 export function useUpcomingGames() {
