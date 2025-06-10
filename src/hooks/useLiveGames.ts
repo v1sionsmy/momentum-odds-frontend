@@ -202,8 +202,8 @@ export function useLiveTeams() {
           opponent: game.home_team,
           status: game.status
         });
+    });
     }
-      });
     
     return teamsArray;
   }, [games]);
