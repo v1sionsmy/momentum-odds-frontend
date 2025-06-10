@@ -153,14 +153,11 @@ export function useUpcomingGames() {
     gcTime: 30 * 60 * 1000, // 30 minutes cache
     refetchOnWindowFocus: false,
     refetchInterval: 5 * 60 * 1000, // Only refetch every 5 minutes
+  });
   
-  console.log('🔮 useUpcomingGames result:', {
-    data: result.data,
-    isLoading: result.isLoading,
-    error: result.error,
-    dataLength: result.data?.length
   
   return result;
+  console.log('🔮 useUpcomingGames result:', result);
 }
 
 export function useLiveGames() {
@@ -171,6 +168,7 @@ export function useLiveGames() {
     gcTime: 2 * 60 * 1000, // 2 minutes cache
     refetchOnWindowFocus: true, // Refetch when user returns to tab
     refetchInterval: 30 * 1000, // Refetch every 30 seconds for live data
+  });
 }
 
 export function useLiveTeams() {
