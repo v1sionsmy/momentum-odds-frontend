@@ -8,6 +8,7 @@ import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
 import ViewModeSelector from '@/components/ViewModeSelector';
 import MomentumOddsHeader from '@/components/MomentumOddsHeader';
+import GameCountdown from '@/components/GameCountdown';
 
 export default function DashboardPage() {
   // Core state
@@ -59,6 +60,9 @@ export default function DashboardPage() {
           
     if (!selectedTeam || !opponentTeam) return null;
     
+    // Get game start time from upcoming games data
+    const gameStartTime = upcomingGames?.find(game => game.id === selectedGameId)?.start_time || null;
+    
     // Check if this is an upcoming game (not live)
     const isUpcomingGame = selectedTeam.status === 'SCHEDULED';
     
@@ -70,6 +74,7 @@ export default function DashboardPage() {
         quarter: null,
         isLive: false,
         isUpcoming: true,
+        gameStartTime: gameStartTime || null, // Ensure it's never undefined
         selectedTeam: {
           name: selectedTeam.name,
           score: 0,
@@ -484,15 +489,10 @@ export default function DashboardPage() {
               ) : (
                 /* Upcoming Game Content */
                 <div className="p-4 flex-1 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <div className="text-6xl mb-4">⏰</div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold text-white">Game Starts Soon</h3>
-                      <p className="text-gray-400 text-sm max-w-sm">
-                        Live momentum tracking and real-time analysis will be available once the game begins.
-                      </p>
-                    </div>
-                  </div>
+                  <GameCountdown 
+                    gameStartTime={gameData.gameStartTime ?? null}
+                    className=""
+                  />
                 </div>
               )}
 
