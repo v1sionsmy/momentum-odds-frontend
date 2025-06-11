@@ -81,8 +81,6 @@ const GameCountdown: React.FC<GameCountdownProps> = ({ gameStartTime, className 
 
   return (
     <div className={`text-center space-y-4 ${className}`}>
-      <div className="text-6xl mb-4">⏰</div>
-      
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-white">Game Starts In</h3>
         
