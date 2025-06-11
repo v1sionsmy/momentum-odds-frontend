@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import MomentumOddsHeader from '@/components/MomentumOddsHeader';
 
@@ -23,9 +24,11 @@ export default function WNBAPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-8"
           >
-            <img
+            <Image
               src="/MomentumoddsLogo.png"
               alt="Momentum Odds Logo"
+              width={192}
+              height={96}
               className="h-24 w-auto mx-auto"
             />
           </motion.div>
@@ -56,7 +59,7 @@ export default function WNBAPage() {
             transition={{ duration: 0.5, delay: 0.5 }}
             className="text-xl text-purple-100 mb-8 leading-relaxed"
           >
-            We're bringing our cutting-edge momentum analytics to women's professional basketball. 
+            We&apos;re bringing our cutting-edge momentum analytics to women&apos;s professional basketball. 
             Get ready for real-time insights, player momentum tracking, and predictive analytics 
             for the WNBA season.
           </motion.p>

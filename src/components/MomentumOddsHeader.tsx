@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Menu, X, ChevronDown, Clock, Circle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const navItems = [
@@ -172,9 +173,11 @@ export default function MomentumOddsHeader({
         {/* Center: Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <Link href="/" className="flex items-center gap-2">
-            <img
+            <Image
               src="/MomentumoddsLogo.png"
               alt="Momentum Odds Logo"
+              width={160}
+              height={80}
               className="h-20 w-auto select-none"
             />
           </Link>

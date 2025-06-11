@@ -56,7 +56,7 @@ export default function SportsPage() {
             <div className="text-center">
               <h2 className="text-2xl font-bold text-white mb-4">WNBA</h2>
               <p className="text-purple-100 mb-6">
-                Advanced analytics for women's professional basketball
+                Advanced analytics for women&apos;s professional basketball
               </p>
               <Link
                 href="/sports/wnba"
