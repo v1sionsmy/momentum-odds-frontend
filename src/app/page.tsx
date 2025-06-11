@@ -3,10 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import MomentumOddsHeader from "@/components/MomentumOddsHeader";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Navigation Header */}
+      <MomentumOddsHeader />
+      
       {/* Hero Section */}
       <section className="relative px-4 py-16 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
