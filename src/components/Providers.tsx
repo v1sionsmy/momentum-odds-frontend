@@ -22,7 +22,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         
         // ✅ Additional Next.js 15 optimizations
         networkMode: 'always', // Ensure queries work in SSR
-        refetchOnWindowFocus: false, // Prevent aggressive refetching
       },
     },
   }));
