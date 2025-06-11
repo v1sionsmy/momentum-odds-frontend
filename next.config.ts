@@ -11,8 +11,12 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
   },
   
-  // Production build optimizations
+  // Production build optimizations and React 19 compatibility
   experimental: {
+    // ✅ CRITICAL FIX: Enable for React Query compatibility
+    ppr: false, // Disable partial prerendering to avoid query conflicts
+    dynamicIO: false, // Disable dynamic IO to prevent rendering conflicts
+    
     // Enable when Vercel resolves critters module issues
     // optimizeCss: true,
   },
