@@ -2,32 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
+import { useTeamMomentum } from '@/hooks/useTeamMomentum';
 import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
 import ViewModeSelector from '@/components/ViewModeSelector';
 import MomentumOddsHeader from '@/components/MomentumOddsHeader';
 import GameCountdown from '@/components/GameCountdown';
-
-// Interface for live game data with ESPN fields
-interface LiveGameData {
-  id: number;
-  home_team: string;
-  away_team: string;
-  home_score: number;
-  away_score: number;
-  start_time: string;
-  clock?: string;
-  period?: number;
-  status: string;
-}
-
-// Interface for player data
-interface PlayerData {
-  player_id: number;
-  full_name?: string;
-  name?: string;
-}
 
 export default function DashboardPage() {
   // Core state
@@ -42,6 +23,7 @@ export default function DashboardPage() {
   const { data: upcomingTeams, isLoading: isLoadingUpcomingTeams } = useUpcomingTeams();
   const { data: upcomingGames, isLoading: isLoadingUpcomingGames } = useUpcomingGamesSimple();
   const { data: liveGames, isLoading: isLoadingLiveGames } = useLiveGamesSimple();
+  const { teamMomentum } = useTeamMomentum(selectedGameId);
   const { teamPlayers } = useTeamPlayers(selectedGameId, null);
 
   console.log('🎮 Dashboard Debug:', {
@@ -121,9 +103,8 @@ export default function DashboardPage() {
     // For LIVE games, use REAL ESPN data
     if (liveGame && actualGame) {
       // Get real game time and quarter from the live game data
-      const liveGameData = liveGame as LiveGameData;
-      const gameTime = liveGameData.clock || "12:00";
-      const quarter = liveGameData.period ? `Q${liveGameData.period}` : "Q1";
+      const gameTime = (liveGame as any).clock || "12:00";
+      const quarter = (liveGame as any).period ? `Q${(liveGame as any).period}` : "Q1";
       
       // Use REAL scores from ESPN
       const homeScore = actualGame.home_score || 0;
@@ -198,37 +179,37 @@ export default function DashboardPage() {
       return [];
     }
 
-    if (!teamPlayers || teamPlayers.length === 0) {
-      if (selectedGameId && gameData?.isLive) {
-        return Array.from({ length: 6 }, (_, i) => ({
-          playerId: i + 1,
-          name: `Player ${i + 1}`,
-          points: Math.floor(Math.random() * 15) + 10,
-          pointsETA: Math.floor(Math.random() * 10) + 20,
-          rebounds: Math.floor(Math.random() * 8) + 3,
-          reboundsETA: Math.floor(Math.random() * 5) + 6,
-          assists: Math.floor(Math.random() * 6) + 2,
-          assistsETA: Math.floor(Math.random() * 4) + 5,
+    // Use real player data from the enhanced hook
+    if (teamPlayers && teamPlayers.length > 0) {
+      console.log('🏀 Using player data from enhanced hook:', teamPlayers.length, 'players');
+      
+      return teamPlayers.slice(0, 8).map((player, index: number) => {
+        // Calculate dynamic momentum based on performance
+        const points = player.points || 0;
+        const rebounds = player.rebounds || 0;
+        const assists = player.assists || 0;
+        const minutes = player.minutes_played || 0;
+        
+        // Performance-based momentum calculation
+        const performanceScore = (points * 2 + assists * 1.5 + rebounds * 1.2) / Math.max(minutes / 30, 0.5);
+        const momentum = Math.max(0.1, Math.min(0.9, performanceScore / 20));
+        
+        return {
+          playerId: player.player_id,
+          name: player.full_name || player.name || `Player ${player.player_id}`,
+          points: points,
+          pointsETA: Math.floor(points * 1.2 + Math.random() * 5), // Projected final
+          rebounds: rebounds,
+          reboundsETA: Math.floor(rebounds * 1.3 + Math.random() * 3),
+          assists: assists,
+          assistsETA: Math.floor(assists * 1.4 + Math.random() * 2),
           color: gameData?.selectedTeam?.color || getTeamColor("Default"),
-          momentum: Math.random() * 0.8 + 0.1
-        }));
-      }
-      return [];
-    }
-    
-    if (gameData?.isLive) {
-      return teamPlayers.slice(0, 8).map((player: PlayerData) => ({
-        playerId: player.player_id,
-        name: player.full_name || player.name || `Player ${player.player_id}`,
-        points: Math.floor(Math.random() * 15) + 10,
-        pointsETA: Math.floor(Math.random() * 10) + 20,
-        rebounds: Math.floor(Math.random() * 8) + 3,
-        reboundsETA: Math.floor(Math.random() * 5) + 6,
-        assists: Math.floor(Math.random() * 6) + 2,
-        assistsETA: Math.floor(Math.random() * 4) + 5,
-        color: gameData?.selectedTeam?.color || getTeamColor("Default"),
-        momentum: Math.random() * 0.8 + 0.1
-      }));
+          momentum: momentum,
+          position: player.position || 'G',
+          minutes: minutes,
+          team: player.team_name || 'Unknown'
+        };
+      });
     }
 
     return [];
