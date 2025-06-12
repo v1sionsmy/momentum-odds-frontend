@@ -144,8 +144,8 @@ const fetchLiveGames = async (): Promise<Game[]> => {
     console.log('🔴 Live Games API Response:', data);
     
     if (data.success && Array.isArray(data.live_games)) {
-      // Transform live games response
-      const liveGames = data.live_games.map((game: APIGame) => ({
+      // Transform live games response - include Finals games as live options
+      const liveGames = data.live_games.map((game: any) => ({
         id: game.id,
         api_game_id: game.id,
         home_team: game.home_team,
@@ -154,12 +154,16 @@ const fetchLiveGames = async (): Promise<Game[]> => {
         away_abbr: game.away_abbr || game.away_team?.substring(0, 3).toUpperCase(),
         home_score: game.home_score || 0,
         away_score: game.away_score || 0,
-        status: "LIVE",
-        date: game.last_momentum_update || new Date().toISOString(),
-        start_time: game.start_time || new Date().toISOString()
+        // Treat UPCOMING_FINALS as LIVE so they appear in live games dropdown
+        status: (game.status === "UPCOMING_FINALS" || game.status === "LIVE") ? "LIVE" : game.status,
+        date: game.last_momentum_update || game.start_time || new Date().toISOString(),
+        start_time: game.start_time || new Date().toISOString(),
+        // Mark if this is a Finals game for special handling
+        is_finals: game.is_finals || false,
+        source: game.source || 'backend'
       }));
       
-      console.log('🔴 Transformed Live Games:', liveGames);
+      console.log('🔴 Transformed Live Games (including Finals):', liveGames);
       return liveGames;
     }
     
