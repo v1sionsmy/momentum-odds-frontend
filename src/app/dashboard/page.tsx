@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
-import { useTeamMomentum } from '@/hooks/useTeamMomentum';
 import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
