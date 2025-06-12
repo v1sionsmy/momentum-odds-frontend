@@ -103,8 +103,9 @@ export default function DashboardPage() {
     // For LIVE games, use REAL ESPN data
     if (liveGame && actualGame) {
       // Get real game time and quarter from the live game data
-      const gameTime = (liveGame as any).clock || "12:00";
-      const quarter = (liveGame as any).period ? `Q${(liveGame as any).period}` : "Q1";
+      // Use the clock and period fields that are now preserved from the backend
+      const gameTime = liveGame.clock || "12:00";
+      const quarter = liveGame.period ? `Q${liveGame.period}` : "Q1";
       
       // Use REAL scores from ESPN
       const homeScore = actualGame.home_score || 0;

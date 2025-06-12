@@ -36,6 +36,10 @@ export interface Game {
   status: string;
   date: string;
   start_time: string;
+  clock?: string;
+  period?: number;
+  is_finals?: boolean;
+  source?: string;
 }
 
 export interface Team {
@@ -167,12 +171,15 @@ const fetchLiveGames = async (): Promise<Game[]> => {
         status: (game.status === "UPCOMING_FINALS" || game.status === "LIVE") ? "LIVE" : game.status,
         date: game.last_momentum_update || game.start_time || new Date().toISOString(),
         start_time: game.start_time || new Date().toISOString(),
+        // Preserve clock and period data from backend
+        clock: game.clock,
+        period: game.period,
         // Mark if this is a Finals game for special handling
         is_finals: game.is_finals || false,
         source: game.source || 'backend'
       }));
       
-      console.log('🔴 Transformed Live Games (including Finals):', liveGames);
+      console.log('🔴 Transformed Live Games (including Finals with clock/period):', liveGames);
       return liveGames;
     }
     
