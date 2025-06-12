@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
-import { useTeamMomentum } from '@/hooks/useTeamMomentum';
 import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
@@ -23,7 +22,6 @@ export default function DashboardPage() {
   const { data: upcomingTeams, isLoading: isLoadingUpcomingTeams } = useUpcomingTeams();
   const { data: upcomingGames, isLoading: isLoadingUpcomingGames } = useUpcomingGamesSimple();
   const { data: liveGames, isLoading: isLoadingLiveGames } = useLiveGamesSimple();
-  const { teamMomentum } = useTeamMomentum(selectedGameId);
   const { teamPlayers } = useTeamPlayers(selectedGameId, null);
 
   console.log('🎮 Dashboard Debug:', {
@@ -184,7 +182,7 @@ export default function DashboardPage() {
     if (teamPlayers && teamPlayers.length > 0) {
       console.log('🏀 Using player data from enhanced hook:', teamPlayers.length, 'players');
       
-      return teamPlayers.slice(0, 8).map((player, index: number) => {
+      return teamPlayers.slice(0, 8).map((player) => {
         // Calculate dynamic momentum based on performance
         const points = player.points || 0;
         const rebounds = player.rebounds || 0;
