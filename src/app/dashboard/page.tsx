@@ -60,11 +60,13 @@ export default function DashboardPage() {
           
     if (!selectedTeam || !opponentTeam) return null;
     
-    // Get game start time from upcoming games data
-    const gameStartTime = upcomingGames?.find(game => game.id === selectedGameId)?.start_time || null;
+    // Get the actual game data from live or upcoming games
+    const liveGame = liveGames?.find(game => game.id === selectedGameId);
+    const upcomingGame = upcomingGames?.find(game => game.id === selectedGameId);
+    const actualGame = liveGame || upcomingGame;
     
     // Check if this is an upcoming game (not live)
-    const isUpcomingGame = selectedTeam.status === 'SCHEDULED';
+    const isUpcomingGame = selectedTeam.status === 'SCHEDULED' || !liveGame;
     
     // For upcoming games, don't show live data
     if (isUpcomingGame) {
@@ -74,7 +76,7 @@ export default function DashboardPage() {
         quarter: null,
         isLive: false,
         isUpcoming: true,
-        gameStartTime: gameStartTime || null, // Ensure it's never undefined
+        gameStartTime: actualGame?.start_time || null,
         selectedTeam: {
           name: selectedTeam.name,
           score: 0,
@@ -98,44 +100,64 @@ export default function DashboardPage() {
       };
     }
     
-    // For live games, get momentum data with fallback
-    const teamMomentumValue = teamMomentum?.teamMomentum?.[selectedTeam.name] || 
-                             (0.5 + Math.sin(Date.now() / 10000) * 0.4);
-    const opponentMomentumValue = teamMomentum?.teamMomentum?.[opponentTeam.name] || 
-                                 (0.3 + Math.cos(Date.now() / 8000) * 0.3);
-
-    return {
-      gameId: selectedGameId,
-      gameTime: "7:23",
-      quarter: "Q3", 
-      isLive: true,
-      isUpcoming: false,
-      selectedTeam: {
-        name: selectedTeam.name,
-        score: selectedTeam.score || Math.floor(Math.random() * 30) + 70,
-        color: getTeamColor(selectedTeam.name),
-        momentum: Math.abs(teamMomentumValue),
-        isHome: selectedTeam.isHome
-      },
-      opponentTeam: {
-        name: opponentTeam.name,
-        score: opponentTeam.score || Math.floor(Math.random() * 30) + 70,
-        color: getTeamColor(opponentTeam.name),
-        momentum: Math.abs(opponentMomentumValue),
-        isHome: opponentTeam.isHome
-      },
-      odds: {
-        spread: -4.5,
-        total: 218.5,
-        moneyline: { home: -180, away: +155 }
-      },
-      teamInfo: {
-        nextPlayLikely: "Strong Offensive Push",
-        confidence: 73,
-        keyLineup: ["Starter 1", "Starter 2", "Starter 3", "Starter 4", "Starter 5"],
-        gameFlow: "High Pace"
-      }
-    };
+    // For LIVE games, use REAL ESPN data
+    if (liveGame && actualGame) {
+      // Get real game time and quarter from the live game data
+      const gameTime = (liveGame as any).clock || "12:00";
+      const quarter = (liveGame as any).period ? `Q${(liveGame as any).period}` : "Q1";
+      
+      // Use REAL scores from ESPN
+      const homeScore = actualGame.home_score || 0;
+      const awayScore = actualGame.away_score || 0;
+      
+      // Generate dynamic momentum based on score differential and time
+      const scoreDiff = homeScore - awayScore;
+      const timeFactor = Math.sin(Date.now() / 15000) * 0.2; // Oscillating momentum
+      
+      // Calculate momentum based on score lead and add some variation
+      const homeMomentum = Math.max(0.1, Math.min(0.9, 0.5 + (scoreDiff * 0.02) + timeFactor));
+      const awayMomentum = Math.max(0.1, Math.min(0.9, 0.5 - (scoreDiff * 0.02) - timeFactor));
+      
+      // Determine which team is selected and assign momentum accordingly
+      const selectedMomentum = selectedTeam.isHome ? homeMomentum : awayMomentum;
+      const opponentMomentum = selectedTeam.isHome ? awayMomentum : homeMomentum;
+      
+      return {
+        gameId: selectedGameId,
+        gameTime: gameTime,
+        quarter: quarter,
+        isLive: true,
+        isUpcoming: false,
+        selectedTeam: {
+          name: selectedTeam.name,
+          score: selectedTeam.isHome ? homeScore : awayScore,
+          color: getTeamColor(selectedTeam.name),
+          momentum: selectedMomentum,
+          isHome: selectedTeam.isHome
+        },
+        opponentTeam: {
+          name: opponentTeam.name,
+          score: opponentTeam.isHome ? homeScore : awayScore,
+          color: getTeamColor(opponentTeam.name),
+          momentum: opponentMomentum,
+          isHome: opponentTeam.isHome
+        },
+        odds: {
+          spread: -4.5,
+          total: 218.5,
+          moneyline: { home: -180, away: +155 }
+        },
+        teamInfo: {
+          nextPlayLikely: scoreDiff > 5 ? "Defensive Stand" : "Offensive Push",
+          confidence: Math.floor(Math.abs(selectedMomentum - 0.5) * 100 + 50),
+          keyLineup: ["Starter 1", "Starter 2", "Starter 3", "Starter 4", "Starter 5"],
+          gameFlow: Math.abs(scoreDiff) > 10 ? "Controlled Pace" : "High Pace"
+        }
+      };
+    }
+    
+    // Fallback for edge cases
+    return null;
   };
 
   // Get team color (simplified mapping)
@@ -208,19 +230,36 @@ export default function DashboardPage() {
       const selectedMomentum = gameData.selectedTeam.momentum || 0;
       const opponentMomentum = gameData.opponentTeam.momentum || 0;
       
-      // If opponent has significantly higher momentum (>20% difference), show opponent
-      if (opponentMomentum > selectedMomentum && (opponentMomentum - selectedMomentum) > 0.2) {
-        return {
-          hex: gameData.opponentTeam.color,
-          momentum: opponentMomentum
-        };
-      } else {
-        // Default to selected team
-        return {
-          hex: gameData.selectedTeam.color,
-          momentum: selectedMomentum
-        };
+      // Enhanced momentum logic for better visual effect
+      let flashColor = gameData.selectedTeam.color;
+      let flashMomentum = selectedMomentum;
+      
+      // If opponent has significantly higher momentum (>15% difference), show opponent
+      if (opponentMomentum > selectedMomentum && (opponentMomentum - selectedMomentum) > 0.15) {
+        flashColor = gameData.opponentTeam.color;
+        flashMomentum = opponentMomentum;
       }
+      
+      // Boost momentum for better visual effect (minimum 0.3 for live games)
+      if (gameData.isLive) {
+        flashMomentum = Math.max(0.3, flashMomentum);
+      }
+      
+      // Debug logging
+      console.log('🔥 Momentum Flash Debug:', {
+        selectedTeam: gameData.selectedTeam.name,
+        selectedMomentum: selectedMomentum.toFixed(2),
+        opponentMomentum: opponentMomentum.toFixed(2),
+        flashColor,
+        flashMomentum: flashMomentum.toFixed(2),
+        isLive: gameData.isLive,
+        reduceFlashing
+      });
+      
+      return {
+        hex: flashColor,
+        momentum: flashMomentum
+      };
     }
   };
 
