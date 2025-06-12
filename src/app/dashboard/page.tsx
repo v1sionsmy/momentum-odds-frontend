@@ -168,7 +168,7 @@ export default function DashboardPage() {
           reboundsETA: Math.floor(Math.random() * 5) + 6,
           assists: Math.floor(Math.random() * 6) + 2,
           assistsETA: Math.floor(Math.random() * 4) + 5,
-          color: getTeamColor("Default"),
+          color: gameData?.selectedTeam?.color || getTeamColor("Default"),
           momentum: Math.random() * 0.8 + 0.1
         }));
       }
@@ -185,7 +185,7 @@ export default function DashboardPage() {
         reboundsETA: Math.floor(Math.random() * 5) + 6,
         assists: Math.floor(Math.random() * 6) + 2,
         assistsETA: Math.floor(Math.random() * 4) + 5,
-        color: getTeamColor("Default"),
+        color: gameData?.selectedTeam?.color || getTeamColor("Default"),
         momentum: Math.random() * 0.8 + 0.1
       }));
     }
@@ -204,10 +204,23 @@ export default function DashboardPage() {
         momentum: selectedPlayer.momentum
       };
     } else {
-      return {
-        hex: gameData.selectedTeam.color,
-        momentum: gameData.selectedTeam.momentum
-      };
+      // Show the team with higher momentum for more dynamic flashing
+      const selectedMomentum = gameData.selectedTeam.momentum || 0;
+      const opponentMomentum = gameData.opponentTeam.momentum || 0;
+      
+      // If opponent has significantly higher momentum (>20% difference), show opponent
+      if (opponentMomentum > selectedMomentum && (opponentMomentum - selectedMomentum) > 0.2) {
+        return {
+          hex: gameData.opponentTeam.color,
+          momentum: opponentMomentum
+        };
+      } else {
+        // Default to selected team
+        return {
+          hex: gameData.selectedTeam.color,
+          momentum: selectedMomentum
+        };
+      }
     }
   };
 
