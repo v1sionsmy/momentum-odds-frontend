@@ -15,6 +15,15 @@ interface APIGame {
   last_momentum_update?: string;
 }
 
+// Extended interface for live games with additional ESPN fields
+interface LiveAPIGame extends APIGame {
+  status: string;
+  clock?: string;
+  period?: number;
+  is_finals?: boolean;
+  source?: string;
+}
+
 export interface Game {
   id: number;
   api_game_id: number;
@@ -145,7 +154,7 @@ const fetchLiveGames = async (): Promise<Game[]> => {
     
     if (data.success && Array.isArray(data.live_games)) {
       // Transform live games response - include Finals games as live options
-      const liveGames = data.live_games.map((game: any) => ({
+      const liveGames = data.live_games.map((game: LiveAPIGame) => ({
         id: game.id,
         api_game_id: game.id,
         home_team: game.home_team,
