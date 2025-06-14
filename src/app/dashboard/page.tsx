@@ -12,15 +12,53 @@ import MomentumOddsHeader from '@/components/MomentumOddsHeader';
 import GameCountdown from '@/components/GameCountdown';
 import { formatSpread, formatTotal, formatMoneyline, getOddsDataMessage } from '@/lib/utils';
 
+// TypeScript interfaces for better type safety
+interface PlayerData {
+  playerId: number;
+  name: string;
+  points: number;
+  pointsETA: number;
+  rebounds: number;
+  reboundsETA: number;
+  assists: number;
+  assistsETA: number;
+  color: string;
+  momentum: number;
+  position: string;
+  minutes: number;
+  team: string;
+  mlPrediction?: MLPrediction;
+}
+
+interface MLPrediction {
+  points: number;
+  rebounds: number;
+  assists: number;
+  confidence: number;
+  modelType: string;
+}
+
+interface TeamPlayer {
+  player_id: number;
+  name: string;
+  points?: number;
+  rebounds?: number;
+  assists?: number;
+  minutes_played?: number;
+  plus_minus?: number;
+  position?: string;
+  team_name?: string;
+}
+
 export default function DashboardPage() {
   // Core state
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [view, setView] = useState<'team' | 'player'>('team');
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerData | null>(null);
   const [reduceFlashing, setReduceFlashing] = useState(false);
   const [realTimeGameData, setRealTimeGameData] = useState<{clock: string, period: number} | null>(null);
-  const [playerPredictions, setPlayerPredictions] = useState<Record<string, any>>({}); // Store ML predictions
+  const [playerPredictions, setPlayerPredictions] = useState<Record<string, MLPrediction>>({}); // Store ML predictions
 
   // Data hooks - using both simple (for games) and team hooks (for team analysis)
   const { data: liveTeams, isLoading: isLoadingLiveTeams } = useLiveTeams();
@@ -190,12 +228,12 @@ export default function DashboardPage() {
   );
 
   // Fetch ML predictions for players
-  const fetchPlayerPredictions = async (gameId: number, players: any[]) => {
+  const fetchPlayerPredictions = async (gameId: number, players: TeamPlayer[]) => {
     if (!gameId || !players || players.length === 0) return;
     
     console.log('🤖 Fetching ML predictions for', players.length, 'players in game', gameId);
     
-    const predictions: Record<string, any> = {};
+    const predictions: Record<string, MLPrediction> = {};
     
     // Fetch predictions for each player
     await Promise.all(
@@ -226,7 +264,19 @@ export default function DashboardPage() {
   // Fetch predictions when game or players change
   useEffect(() => {
     if (selectedGameId && teamPlayers && teamPlayers.length > 0) {
-      fetchPlayerPredictions(selectedGameId, teamPlayers);
+      // Convert Player[] to TeamPlayer[] for the function call
+      const convertedPlayers: TeamPlayer[] = teamPlayers.map(player => ({
+        player_id: player.player_id,
+        name: player.name || player.full_name || `Player ${player.player_id}`,
+        points: player.points,
+        rebounds: player.rebounds,
+        assists: player.assists,
+        minutes_played: player.minutes_played,
+        plus_minus: player.plus_minus,
+        position: player.position,
+        team_name: player.team_name
+      }));
+      fetchPlayerPredictions(selectedGameId, convertedPlayers);
     }
   }, [selectedGameId, teamPlayers]);
 
@@ -364,6 +414,44 @@ export default function DashboardPage() {
   const playerData = getPlayerData();
   const flashData = getCurrentMomentum();
 
+  // Convert PlayerData to ViewModeSelector Player format
+  const convertToViewModeSelectorPlayer = (playerData: PlayerData[]) => {
+    return playerData.map(player => ({
+      playerId: player.playerId,
+      name: player.name,
+      color: player.color,
+      momentum: player.momentum
+    }));
+  };
+
+  // Convert PlayerData to LowerPanel PlayerStats format
+  const convertToPlayerStats = (player: PlayerData | null) => {
+    if (!player) return undefined;
+    return {
+      playerId: player.playerId.toString(),
+      name: player.name,
+      points: player.points,
+      pointsETA: player.pointsETA,
+      rebounds: player.rebounds,
+      reboundsETA: player.reboundsETA,
+      assists: player.assists,
+      assistsETA: player.assistsETA,
+      color: player.color
+    };
+  };
+
+  // Handle player selection from ViewModeSelector
+  const handlePlayerSelect = (viewModeSelectorPlayer: { playerId: number; name: string; color: string; momentum: number } | null) => {
+    if (!viewModeSelectorPlayer) {
+      setSelectedPlayer(null);
+      return;
+    }
+    
+    // Find the full PlayerData object that matches the selected player
+    const fullPlayerData = playerData.find(p => p.playerId === viewModeSelectorPlayer.playerId);
+    setSelectedPlayer(fullPlayerData || null);
+  };
+
   // Apply reduced motion settings
   useEffect(() => {
     const root = document.documentElement;
@@ -453,8 +541,8 @@ export default function DashboardPage() {
                   view={view}
                   onViewChange={setView}
                   selectedPlayer={selectedPlayer}
-                  onPlayerSelect={setSelectedPlayer}
-                  players={playerData}
+                  onPlayerSelect={handlePlayerSelect}
+                  players={convertToViewModeSelectorPlayer(playerData)}
                 />
               </div>
             )}
@@ -820,7 +908,7 @@ export default function DashboardPage() {
         {gameData && (
           <LowerPanel
             mode={view}
-            selectedPlayer={selectedPlayer}
+            selectedPlayer={convertToPlayerStats(selectedPlayer)}
             teamInfo={gameData.teamInfo}
             gameId={selectedGameId || undefined}
           />
