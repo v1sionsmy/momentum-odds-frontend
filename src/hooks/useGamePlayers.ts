@@ -15,6 +15,7 @@ interface Player {
   team_abbr: string;
   field_goal_percentage?: number;
   plus_minus?: number;
+  momentum?: number;
 }
 
 // Real NBA player names for realistic fallback data
@@ -116,7 +117,7 @@ export function useGamePlayers(gameId: number | null, minMinutes = 15) {
               setGamePlayers(fakeData);
             }
           } else if (Array.isArray(data) && data.length > 0) {
-            // Old API format (direct array)
+            // Old API format (direct array) - shouldn't happen with new endpoint
             console.log(`🏀 Old API format - ${data.length} players found`);
             setGamePlayers(data);
           } else {
@@ -188,7 +189,7 @@ export function useTeamPlayers(gameId: number | null, teamName: string | null, m
               allPlayers = generateRealisticPlayerData(gameId, teamName || undefined);
             }
           } else if (Array.isArray(data) && data.length > 0) {
-            // Old API format
+            // Old API format - shouldn't happen with new endpoint
             allPlayers = data;
             console.log(`🏀 Team players - Old API format - ${data.length} players found`);
           } else {

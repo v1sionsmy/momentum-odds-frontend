@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
 import { useGameOdds } from '@/hooks/useGameOdds';
+import { api } from '@/lib/api';
 import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
@@ -18,13 +19,21 @@ export default function DashboardPage() {
   const [view, setView] = useState<'team' | 'player'>('team');
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [reduceFlashing, setReduceFlashing] = useState(false);
+  const [realTimeGameData, setRealTimeGameData] = useState<{clock: string, period: number} | null>(null);
+  const [playerPredictions, setPlayerPredictions] = useState<Record<string, any>>({}); // Store ML predictions
 
   // Data hooks - using both simple (for games) and team hooks (for team analysis)
   const { data: liveTeams, isLoading: isLoadingLiveTeams } = useLiveTeams();
   const { data: upcomingTeams, isLoading: isLoadingUpcomingTeams } = useUpcomingTeams();
   const { data: upcomingGames, isLoading: isLoadingUpcomingGames } = useUpcomingGamesSimple();
   const { data: liveGames, isLoading: isLoadingLiveGames } = useLiveGamesSimple();
-  const { teamPlayers } = useTeamPlayers(selectedGameId, null);
+  
+  // Get the selected team name for player filtering
+  const selectedTeamName = selectedTeamId ? 
+    [...(liveTeams || []), ...(upcomingTeams || [])].find(team => team.id === selectedTeamId)?.name || null : null;
+  
+  // Get players for the selected team (or all if no team selected)
+  const { teamPlayers } = useTeamPlayers(selectedGameId, selectedTeamName);
 
   console.log('🎮 Dashboard Debug:', {
     upcomingGames: upcomingGames?.length || 0,
@@ -33,6 +42,8 @@ export default function DashboardPage() {
     liveTeams: liveTeams?.length || 0,
     selectedGameId,
     selectedTeamId,
+    selectedTeamName,
+    teamPlayersCount: teamPlayers?.length || 0,
     isLoadingGames: isLoadingUpcomingGames || isLoadingLiveGames,
     isLoadingTeams: isLoadingUpcomingTeams || isLoadingLiveTeams
   });
@@ -99,10 +110,9 @@ export default function DashboardPage() {
     
     // For LIVE games, use REAL ESPN data
     if (liveGame && actualGame) {
-      // Get real game time and quarter from the live game data
-      // Use the clock and period fields that are now preserved from the backend
-      const gameTime = liveGame.clock || "12:00";
-      const quarter = liveGame.period ? `Q${liveGame.period}` : "Q1";
+      // Get real game time and quarter from the real-time data or fallback to live game data
+      const gameTime = realTimeGameData?.clock || liveGame.clock || "12:00";
+      const quarter = realTimeGameData?.period ? `Q${realTimeGameData.period}` : (liveGame.period ? `Q${liveGame.period}` : "Q1");
       
       // Use REAL scores from ESPN
       const homeScore = actualGame.home_score || 0;
@@ -179,6 +189,47 @@ export default function DashboardPage() {
     gameData?.isUpcoming || false
   );
 
+  // Fetch ML predictions for players
+  const fetchPlayerPredictions = async (gameId: number, players: any[]) => {
+    if (!gameId || !players || players.length === 0) return;
+    
+    console.log('🤖 Fetching ML predictions for', players.length, 'players in game', gameId);
+    
+    const predictions: Record<string, any> = {};
+    
+    // Fetch predictions for each player
+    await Promise.all(
+      players.slice(0, 8).map(async (player) => {
+        try {
+          const prediction = await api.predictPlayerPerformance(gameId, player.player_id);
+          if (prediction.success) {
+            predictions[player.player_id] = {
+              points: prediction.predicted_points,
+              rebounds: prediction.predicted_rebounds,
+              assists: prediction.predicted_assists,
+              confidence: prediction.confidence_score,
+              modelType: prediction.model_type
+            };
+            console.log(`✅ ML prediction for ${player.name}: ${prediction.predicted_points}pts, ${prediction.predicted_rebounds}reb, ${prediction.predicted_assists}ast (${prediction.model_type})`);
+          } else {
+            console.warn(`⚠️ Failed to get ML prediction for ${player.name}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error getting ML prediction for ${player.name}:`, error);
+        }
+      })
+    );
+    
+    setPlayerPredictions(predictions);
+  };
+
+  // Fetch predictions when game or players change
+  useEffect(() => {
+    if (selectedGameId && teamPlayers && teamPlayers.length > 0) {
+      fetchPlayerPredictions(selectedGameId, teamPlayers);
+    }
+  }, [selectedGameId, teamPlayers]);
+
   // Generate player data from teamPlayers
   const getPlayerData = () => {
     if (gameData?.isUpcoming) {
@@ -188,6 +239,7 @@ export default function DashboardPage() {
     // Use real player data from the enhanced hook
     if (teamPlayers && teamPlayers.length > 0) {
       console.log('🏀 Using player data from enhanced hook:', teamPlayers.length, 'players');
+      console.log('🏀 First player sample:', teamPlayers[0]);
       
       return teamPlayers.slice(0, 8).map((player) => {
         // Calculate dynamic momentum based on performance
@@ -195,29 +247,64 @@ export default function DashboardPage() {
         const rebounds = player.rebounds || 0;
         const assists = player.assists || 0;
         const minutes = player.minutes_played || 0;
+        const plusMinus = player.plus_minus || 0;
         
-        // Performance-based momentum calculation
-        const performanceScore = (points * 2 + assists * 1.5 + rebounds * 1.2) / Math.max(minutes / 30, 0.5);
-        const momentum = Math.max(0.1, Math.min(0.9, performanceScore / 20));
+        // Enhanced momentum calculation using efficiency and plus/minus
+        let momentum = 0.5; // Default
+        
+        if (minutes > 0) {
+          const efficiency = (points + rebounds + assists) / minutes;
+          const plusMinusFactor = Math.max(0, Math.min(1, (plusMinus + 20) / 40)); // Normalize -20 to +20 range
+          const baseMomentum = Math.min(0.85, efficiency / 3) + (plusMinusFactor * 0.15);
+          momentum = Math.max(0.15, Math.min(0.9, baseMomentum));
+        } else {
+          momentum = 0.1;
+        }
+        
+        console.log(`📊 Calculated momentum for ${player.name}: ${momentum.toFixed(3)} (efficiency: ${minutes > 0 ? ((points + rebounds + assists) / minutes).toFixed(2) : 'N/A'}, +/-: ${plusMinus})`);
+        
+        // Get ML predictions for this player
+        const mlPrediction = playerPredictions[player.player_id];
+        
+        // Use ML predictions if available, otherwise fallback to enhanced statistical projection
+        let pointsETA, reboundsETA, assistsETA;
+        
+        if (mlPrediction) {
+          pointsETA = Math.round(mlPrediction.points * 10) / 10; // Round to 1 decimal
+          reboundsETA = Math.round(mlPrediction.rebounds * 10) / 10;
+          assistsETA = Math.round(mlPrediction.assists * 10) / 10;
+          console.log(`🤖 Using ML prediction for ${player.name}: ${pointsETA}pts, ${reboundsETA}reb, ${assistsETA}ast (${mlPrediction.modelType})`);
+        } else {
+          // Enhanced statistical fallback (better than simple multiplication)
+          const gameProgressFactor = minutes > 0 ? Math.min(2.0, 48 / minutes) : 2.0;
+          const momentumBoost = 1.0 + (momentum - 0.5) * 0.2; // ±10% based on momentum
+          
+          pointsETA = Math.round((points * gameProgressFactor * momentumBoost) * 10) / 10;
+          reboundsETA = Math.round((rebounds * gameProgressFactor * momentumBoost * 0.9) * 10) / 10;
+          assistsETA = Math.round((assists * gameProgressFactor * momentumBoost * 1.1) * 10) / 10;
+          console.log(`📊 Using enhanced statistical projection for ${player.name}: ${pointsETA}pts, ${reboundsETA}reb, ${assistsETA}ast`);
+        }
         
         return {
           playerId: player.player_id,
-          name: player.full_name || player.name || `Player ${player.player_id}`,
+          name: player.name || `Player ${player.player_id}`,
           points: points,
-          pointsETA: Math.floor(points * 1.2 + Math.random() * 5), // Projected final
+          pointsETA: pointsETA,
           rebounds: rebounds,
-          reboundsETA: Math.floor(rebounds * 1.3 + Math.random() * 3),
+          reboundsETA: reboundsETA,
           assists: assists,
-          assistsETA: Math.floor(assists * 1.4 + Math.random() * 2),
-          color: gameData?.selectedTeam?.color || getTeamColor("Default"),
+          assistsETA: assistsETA,
+          color: getTeamColor(player.team_name || 'Default'),
           momentum: momentum,
           position: player.position || 'G',
           minutes: minutes,
-          team: player.team_name || 'Unknown'
+          team: player.team_name || 'Unknown',
+          mlPrediction: mlPrediction // Include ML prediction info for debugging
         };
       });
     }
 
+    console.log('⚠️ No team players data available, returning empty array');
     return [];
   };
 
@@ -296,6 +383,41 @@ export default function DashboardPage() {
       setSelectedPlayer(null);
     }
   }, [gameData?.isUpcoming]);
+
+  // Fetch real-time game data for live games
+  useEffect(() => {
+    if (!selectedGameId || !gameData?.isLive) {
+      setRealTimeGameData(null);
+      return;
+    }
+
+    const fetchRealTimeData = async () => {
+      try {
+        // Use ESPN API directly to get real-time clock and period
+        const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${selectedGameId}`);
+        const data = await response.json();
+        
+        if (data?.header?.competitions?.[0]?.status) {
+          const status = data.header.competitions[0].status;
+          const clock = status.displayClock || "12:00";
+          const period = status.period || 1;
+          
+          setRealTimeGameData({ clock, period });
+          console.log(`🕐 Real-time game data: ${clock} Q${period}`);
+        }
+      } catch (error) {
+        console.error('Error fetching real-time game data:', error);
+      }
+    };
+
+    // Fetch immediately
+    fetchRealTimeData();
+    
+    // Update every 10 seconds for live games
+    const interval = setInterval(fetchRealTimeData, 10000);
+    
+    return () => clearInterval(interval);
+  }, [selectedGameId, gameData?.isLive]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
@@ -420,32 +542,32 @@ export default function DashboardPage() {
                   {selectedTeamId && gameData ? (
                     /* Team selected - show full game context */
                     <>
-                      <h2 className="text-xl font-bold text-white">
-                        {gameData.selectedTeam.name} vs {gameData.opponentTeam.name}
-                      </h2>
-                      
-                      {gameData.isUpcoming ? (
-                        <div className="space-y-2 mt-2">
-                          <div className="text-lg font-semibold text-blue-400">
-                            Game Preview
-                          </div>
-                          <div className="text-sm text-gray-400">
-                            Analytics available when game starts
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="text-2xl font-bold text-gray-300 mt-2">
-                            {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
-                          </div>
-                          <div className="text-sm text-gray-400 mt-1">
-                            {gameData.quarter} • {gameData.gameTime}
-                            {gameData.isLive && (
-                              <span className="ml-2 inline-flex items-center space-x-1">
-                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                                <span className="text-red-500 text-xs font-medium">LIVE</span>
-                              </span>
-                            )}
+                  <h2 className="text-xl font-bold text-white">
+                    {gameData.selectedTeam.name} vs {gameData.opponentTeam.name}
+                  </h2>
+                  
+                  {gameData.isUpcoming ? (
+                    <div className="space-y-2 mt-2">
+                      <div className="text-lg font-semibold text-blue-400">
+                        Game Preview
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        Analytics available when game starts
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-2xl font-bold text-gray-300 mt-2">
+                        {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
+                      </div>
+                      <div className="text-sm text-gray-400 mt-1">
+                        {gameData.quarter} • {gameData.gameTime}
+                        {gameData.isLive && (
+                          <span className="ml-2 inline-flex items-center space-x-1">
+                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-red-500 text-xs font-medium">LIVE</span>
+                          </span>
+                        )}
                           </div>
                         </>
                       )}
@@ -468,8 +590,8 @@ export default function DashboardPage() {
 
                 {/* Analysis Focus - Team Selection */}
                 <div className="p-4 border-b border-gray-700">
-                  <div className="bg-gray-900/50 rounded-lg p-3">
-                    <div className="text-xs text-gray-400 mb-2">Analysis Focus:</div>
+                <div className="bg-gray-900/50 rounded-lg p-3">
+                  <div className="text-xs text-gray-400 mb-2">Analysis Focus:</div>
                     
                     {!selectedTeamId ? (
                       /* No team selected - show selection options */
@@ -510,15 +632,15 @@ export default function DashboardPage() {
                           </button>
                         </div>
                         
-                        <div className="flex items-center justify-center space-x-4">
-                          <div className="text-center">
-                            <div 
-                              className="w-8 h-8 rounded-full mx-auto mb-1 ring-2 ring-blue-500"
+                  <div className="flex items-center justify-center space-x-4">
+                    <div className="text-center">
+                      <div 
+                        className="w-8 h-8 rounded-full mx-auto mb-1 ring-2 ring-blue-500"
                               style={{ backgroundColor: gameData?.selectedTeam.color }}
-                            />
+                      />
                             <div className="text-xs text-white font-medium">{gameData?.selectedTeam.name}</div>
-                            <div className="text-xs text-blue-400">Selected Team</div>
-                          </div>
+                      <div className="text-xs text-blue-400">Selected Team</div>
+                    </div>
                         </div>
                       </div>
                     )}

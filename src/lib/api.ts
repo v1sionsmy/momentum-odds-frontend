@@ -94,7 +94,7 @@ class NBAAnalyticsAPI {
 
   // Game Players
   async getGamePlayers(gameId: number, minMinutes = 15) {
-    return this.request(`/api/games/${gameId}/players?min_minutes=${minMinutes}`);
+    return this.request(`/api/v1/players/game/${gameId}?min_minutes=${minMinutes}`);
   }
 
   // Quarterly Prediction
@@ -122,6 +122,18 @@ class NBAAnalyticsAPI {
   // Model Statistics
   async getModelStats() {
     return this.request('/api/v1/stats/model');
+  }
+
+  // Player Performance Prediction (final game stats)
+  async predictPlayerPerformance(gameId: number, playerId: number) {
+    return this.request('/api/v1/predict/player', {
+      method: 'POST',
+      body: JSON.stringify({
+        game_id: gameId,
+        player_id: playerId,
+        quarter: 4  // Final game prediction
+      })
+    });
   }
 }
 
