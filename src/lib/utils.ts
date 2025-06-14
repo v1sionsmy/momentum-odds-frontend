@@ -51,12 +51,34 @@ export function formatMoneyline(homeOdds: number, awayOdds: number): string {
   return `${formattedAway} / ${formattedHome}`;
 }
 
+// Odds data interfaces
+interface OddsMarkets {
+  moneyline?: {
+    home: number;
+    away: number;
+  };
+  spread?: {
+    points: number;
+    home: number;
+    away: number;
+  };
+  total?: {
+    points: number;
+    over: number;
+    under: number;
+  };
+}
+
+interface OddsData {
+  markets?: OddsMarkets;
+}
+
 /**
  * Detect if odds data appears to be mock/fallback data
  * @param odds - The odds object to check
  * @returns true if the odds appear to be mock data
  */
-export function isMockOddsData(odds: any): boolean {
+export function isMockOddsData(odds: OddsData): boolean {
   if (!odds || !odds.markets) return false;
   
   const { moneyline, spread, total } = odds.markets;
@@ -124,7 +146,7 @@ export function isMockOddsData(odds: any): boolean {
  * @param isUpcoming - Whether this is an upcoming game
  * @returns A message about the odds data
  */
-export function getOddsDataMessage(odds: any, isUpcoming: boolean = false): string {
+export function getOddsDataMessage(odds: OddsData, isUpcoming: boolean = false): string {
   if (!odds) return "No odds available";
   
   if (isMockOddsData(odds)) {

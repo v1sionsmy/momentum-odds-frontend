@@ -24,9 +24,29 @@ interface PlayerPropsOdds {
 }
 
 interface PlayerPropsResponse {
-  playerProps: Record<string, any>;
+  playerProps: Record<string, PlayerData>;
   lastUpdate: string;
   error?: string;
+}
+
+interface PlayerData {
+  [bookmaker: string]: BookmakerData;
+}
+
+interface BookmakerData {
+  points?: PropMarket;
+  rebounds?: PropMarket;
+  assists?: PropMarket;
+}
+
+interface PropMarket {
+  Over?: PropOdds;
+  Under?: PropOdds;
+}
+
+interface PropOdds {
+  point: number;
+  odds: number;
 }
 
 // API configuration
@@ -73,7 +93,7 @@ export function usePlayerProps(gameId: number | null) {
           const transformedProps: PlayerPropsOdds[] = [];
           
           if (propsResponse.playerProps) {
-            Object.entries(propsResponse.playerProps).forEach(([playerName, playerData]: [string, any]) => {
+            Object.entries(propsResponse.playerProps).forEach(([playerName, playerData]: [string, PlayerData]) => {
               // Get first bookmaker's data
               const bookmakers = Object.keys(playerData);
               if (bookmakers.length > 0) {

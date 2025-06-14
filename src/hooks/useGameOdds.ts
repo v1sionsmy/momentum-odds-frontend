@@ -24,34 +24,6 @@ interface GameOdds {
   lastUpdate: string;
 }
 
-interface ScheduledOddsGame {
-  gameId: number;
-  homeTeam: string;
-  awayTeam: string;
-  status: string;
-  markets: {
-    moneyline: { home: number; away: number };
-    spread: { points: number; home: number; away: number };
-    total: { points: number; over: number; under: number };
-  };
-  lastUpdate: string;
-}
-
-interface LiveOddsGame {
-  gameId: number;
-  homeTeam: string;
-  awayTeam: string;
-  status: string;
-  homeScore: number;
-  awayScore: number;
-  markets: {
-    moneyline: { home: number; away: number };
-    spread: { points: number; home: number; away: number };
-    total: { points: number; over: number; under: number };
-  };
-  lastUpdate: string;
-}
-
 // API configuration
 const API_CONFIG = {
   development: 'https://nba-analytics-api.onrender.com',

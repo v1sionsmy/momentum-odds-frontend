@@ -9,7 +9,6 @@ import LowerPanel from '@/components/LowerPanel';
 import ViewModeSelector from '@/components/ViewModeSelector';
 import MomentumOddsHeader from '@/components/MomentumOddsHeader';
 import GameCountdown from '@/components/GameCountdown';
-import PlayerPropsDisplay from '@/components/PlayerPropsDisplay';
 import { formatSpread, formatTotal, formatMoneyline, getOddsDataMessage } from '@/lib/utils';
 
 export default function DashboardPage() {
@@ -359,7 +358,7 @@ export default function DashboardPage() {
                     Choose a team to analyze from the sidebar to begin momentum tracking.
                   </p>
                   <div className="text-sm text-gray-400 mt-4">
-                    👉 Look for "Analysis Focus" in the right panel
+                    👉 Look for &ldquo;Analysis Focus&rdquo; in the right panel
                   </div>
                 </div>
               ) : gameData?.isUpcoming ? (
