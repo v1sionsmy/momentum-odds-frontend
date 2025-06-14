@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PlayerPropsDisplay from './PlayerPropsDisplay';
 
 interface PlayerStats {
   playerId: string;
@@ -24,10 +25,11 @@ interface LowerPanelProps {
   mode: 'team' | 'player';
   selectedPlayer?: PlayerStats;
   teamInfo?: TeamInfo;
+  gameId?: number;
   className?: string;
 }
 
-export default function LowerPanel({ mode, selectedPlayer, teamInfo, className = "" }: LowerPanelProps) {
+export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, className = "" }: LowerPanelProps) {
   return (
     <div className={`grid grid-cols-3 gap-4 p-4 bg-gray-900 border-t border-gray-700 ${className}`}>
       <AnimatePresence mode="wait">
@@ -86,10 +88,10 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, className =
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="col-span-3 grid grid-cols-3 gap-4"
+            className="col-span-3 grid grid-cols-4 gap-4"
           >
             {/* Player Header */}
-            <div className="col-span-3 text-center mb-2">
+            <div className="col-span-4 text-center mb-2">
               <h3 className="text-lg font-semibold text-white">{selectedPlayer.name}</h3>
               <div className="text-sm text-gray-400">Performance vs. Projection</div>
             </div>
@@ -171,6 +173,20 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, className =
                 </div>
               </div>
             </div>
+
+            {/* Player Props Odds */}
+            {gameId && (
+              <PlayerPropsDisplay
+                gameId={gameId}
+                playerId={selectedPlayer.playerId}
+                playerName={selectedPlayer.name}
+                currentStats={{
+                  points: selectedPlayer.points,
+                  rebounds: selectedPlayer.rebounds,
+                  assists: selectedPlayer.assists
+                }}
+              />
+            )}
           </motion.div>
         )}
 

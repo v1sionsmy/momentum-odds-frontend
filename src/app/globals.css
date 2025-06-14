@@ -28,10 +28,48 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Momentum Flash System */
+/* Momentum Flash System - Enhanced */
 @keyframes pulse {
   0%, 100% { opacity: 0; }
   50%      { opacity: .9; }
+}
+
+/* Enhanced momentum flash for different intensity levels */
+@keyframes momentum-flash-intense {
+  0%, 100% { 
+    opacity: 0.05;
+    transform: scale(1);
+  }
+  25% { 
+    opacity: 0.4;
+    transform: scale(1.005);
+  }
+  50% { 
+    opacity: 0.8;
+    transform: scale(1.01);
+  }
+  75% { 
+    opacity: 0.4;
+    transform: scale(1.005);
+  }
+}
+
+@keyframes momentum-flash-moderate {
+  0%, 100% { 
+    opacity: 0.05;
+  }
+  50% { 
+    opacity: 0.6;
+  }
+}
+
+@keyframes momentum-flash-low {
+  0%, 100% { 
+    opacity: 0.02;
+  }
+  50% { 
+    opacity: 0.3;
+  }
 }
 
 .momentum-overlay {
@@ -40,13 +78,34 @@ body {
   background: var(--flash-colour);
   animation: pulse var(--flash-duration) infinite;
   mix-blend-mode: screen;   /* lets the colour tint without hiding UI */
+  border-radius: 4px;       /* subtle rounding to match UI */
+}
+
+/* Dynamic intensity classes */
+.momentum-overlay.intense {
+  animation: momentum-flash-intense var(--flash-duration) infinite;
+}
+
+.momentum-overlay.moderate {
+  animation: momentum-flash-moderate var(--flash-duration) infinite;
+}
+
+.momentum-overlay.low {
+  animation: momentum-flash-low var(--flash-duration) infinite;
 }
 
 /* Accessibility: Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .momentum-overlay {
     animation-duration: 3s;
-    opacity: 0.4 !important;
+    opacity: 0.2 !important;
+  }
+  
+  .momentum-overlay.intense,
+  .momentum-overlay.moderate,
+  .momentum-overlay.low {
+    animation: none;
+    opacity: 0.15 !important;
   }
 }
 

@@ -3,7 +3,7 @@ import { useGameMomentumWebSocket, GameMomentumData, FlashPattern } from "./useG
 
 // Fallback API configuration
 const API_CONFIG = {
-  development: 'http://localhost:8000',
+  development: 'https://nba-analytics-api.onrender.com',
   production: "https://nba-analytics-api.onrender.com"
 };
 

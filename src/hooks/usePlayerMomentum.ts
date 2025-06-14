@@ -35,7 +35,7 @@ interface PropLines {
 
 // API configuration
 const API_CONFIG = {
-  development: 'http://localhost:8000',
+  development: 'https://nba-analytics-api.onrender.com', // Use Render backend instead of localhost
   production: "https://nba-analytics-api.onrender.com" // FIXED: Use correct backend
 };
 

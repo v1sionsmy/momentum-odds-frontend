@@ -24,10 +24,38 @@ interface GameOdds {
   lastUpdate: string;
 }
 
+interface ScheduledOddsGame {
+  gameId: number;
+  homeTeam: string;
+  awayTeam: string;
+  status: string;
+  markets: {
+    moneyline: { home: number; away: number };
+    spread: { points: number; home: number; away: number };
+    total: { points: number; over: number; under: number };
+  };
+  lastUpdate: string;
+}
+
+interface LiveOddsGame {
+  gameId: number;
+  homeTeam: string;
+  awayTeam: string;
+  status: string;
+  homeScore: number;
+  awayScore: number;
+  markets: {
+    moneyline: { home: number; away: number };
+    spread: { points: number; home: number; away: number };
+    total: { points: number; over: number; under: number };
+  };
+  lastUpdate: string;
+}
+
 // API configuration
 const API_CONFIG = {
-  development: 'http://localhost:8000',
-  production: "https://nba-analytics-api.onrender.com" // FIXED: Use correct backend
+  development: 'https://nba-analytics-api.onrender.com',
+  production: "https://nba-analytics-api.onrender.com"
 };
 
 const LEGACY_BASE_URL = API_CONFIG[process.env.NODE_ENV as keyof typeof API_CONFIG] || API_CONFIG.development;
@@ -43,7 +71,7 @@ const api = {
   }
 };
 
-export function useGameOdds(gameId: number | null) {
+export function useGameOdds(gameId: number | null, isLive: boolean = false, isUpcoming: boolean = false) {
   const [oddsData, setOddsData] = useState<GameOdds | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -59,13 +87,18 @@ export function useGameOdds(gameId: number | null) {
     const fetchOdds = async () => {
       setLoading(true);
       try {
+        // ALWAYS use the individual game endpoint as primary method
+        // The bulk endpoints (/odds/live and /odds/scheduled) are unreliable due to API quota limits
         const resp = await api.get(`/games/${gameId}/odds`);
         if (!cancelled) {
           setOddsData(resp.data);
           setError(null);
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e : new Error('Unknown error'));
+        if (!cancelled) {
+          console.error(`Failed to fetch odds for game ${gameId}:`, e);
+          setError(e instanceof Error ? e : new Error('Unknown error'));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -74,15 +107,15 @@ export function useGameOdds(gameId: number | null) {
     // Initial fetch
     fetchOdds();
     
-    // Reduced polling frequency from 10 seconds to 60 seconds
-    // Betting odds don't change every 10 seconds, 1 minute is more appropriate
-    const interval = setInterval(fetchOdds, 60000);
+    // Different polling frequencies based on game state
+    const pollInterval = isLive ? 30000 : 300000; // 30s for live, 5min for scheduled
+    const interval = setInterval(fetchOdds, pollInterval);
     
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [gameId]);
+  }, [gameId, isLive, isUpcoming]);
 
   return { oddsData, isLoadingOdds: isLoading, errorOdds: error };
 } 

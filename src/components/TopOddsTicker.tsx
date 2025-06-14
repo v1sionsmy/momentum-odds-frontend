@@ -1,4 +1,5 @@
 import React from "react";
+import { formatSpread, formatTotal, formatAmericanOdds } from '@/lib/utils';
 
 interface GameOdds {
   gameId: number;
@@ -49,10 +50,10 @@ function TopOddsTicker({ selectedGameId, oddsData }: TopOddsTickerProps) {
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-400">ML:</span>
           <span className="text-sm text-green-400">
-            {oddsData.markets.moneyline.home > 0 ? '+' : ''}{oddsData.markets.moneyline.home}
+            {formatAmericanOdds(oddsData.markets.moneyline.home)}
           </span>
           <span className="text-sm text-red-400">
-            {oddsData.markets.moneyline.away > 0 ? '+' : ''}{oddsData.markets.moneyline.away}
+            {formatAmericanOdds(oddsData.markets.moneyline.away)}
           </span>
         </div>
 
@@ -60,24 +61,21 @@ function TopOddsTicker({ selectedGameId, oddsData }: TopOddsTickerProps) {
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-400">Spread:</span>
           <span className="text-sm text-green-400">
-            {oddsData.markets.spread.points > 0 ? '-' : '+'}{Math.abs(oddsData.markets.spread.points)}
+            {formatSpread(oddsData.markets.spread.points)}
           </span>
           <span className="text-sm text-gray-300">
-            ({oddsData.markets.spread.home > 0 ? '+' : ''}{oddsData.markets.spread.home})
+            ({formatAmericanOdds(oddsData.markets.spread.home)})
           </span>
         </div>
 
         {/* Total */}
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-400">O/U:</span>
+          <span className="text-xs text-gray-400">Total:</span>
           <span className="text-sm text-blue-400">
-            {oddsData.markets.total.points}
+            {formatTotal(oddsData.markets.total.points)}
           </span>
           <span className="text-sm text-gray-300">
-            O({oddsData.markets.total.over > 0 ? '+' : ''}{oddsData.markets.total.over})
-          </span>
-          <span className="text-sm text-gray-300">
-            U({oddsData.markets.total.under > 0 ? '+' : ''}{oddsData.markets.total.under})
+            ({formatAmericanOdds(oddsData.markets.total.over)}/{formatAmericanOdds(oddsData.markets.total.under)})
           </span>
         </div>
 

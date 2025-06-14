@@ -2,12 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveTeams, useUpcomingTeams, useUpcomingGamesSimple, useLiveGamesSimple } from '@/hooks/useLiveGames';
 import { useTeamPlayers } from '@/hooks/useGamePlayers';
+import { useGameOdds } from '@/hooks/useGameOdds';
 import TopBar from '@/components/TopBar';
 import MainCanvas from '@/components/MainCanvas';
 import LowerPanel from '@/components/LowerPanel';
 import ViewModeSelector from '@/components/ViewModeSelector';
 import MomentumOddsHeader from '@/components/MomentumOddsHeader';
 import GameCountdown from '@/components/GameCountdown';
+import PlayerPropsDisplay from '@/components/PlayerPropsDisplay';
+import { formatSpread, formatTotal, formatMoneyline, getOddsDataMessage } from '@/lib/utils';
 
 export default function DashboardPage() {
   // Core state
@@ -38,11 +41,8 @@ export default function DashboardPage() {
   // Handle game selection from header dropdown
   const handleGameSelect = (gameId: number) => {
     setSelectedGameId(gameId);
-    // Auto-select first team when selecting a game
-    const teams = [...(liveTeams || []), ...(upcomingTeams || [])].filter(t => t.gameId === gameId);
-    if (teams.length > 0) {
-      setSelectedTeamId(teams[0].id);
-    }
+    // Remove auto-selection to allow users to choose their team
+    setSelectedTeamId(null);
     setView('team');
   };
 
@@ -172,6 +172,14 @@ export default function DashboardPage() {
     return colorMap[teamName] || "#059669";
   };
 
+  // Get game data and odds after functions are defined
+  const gameData = getTeamData();
+  const { oddsData, isLoadingOdds } = useGameOdds(
+    selectedGameId, 
+    gameData?.isLive || false, 
+    gameData?.isUpcoming || false
+  );
+
   // Generate player data from teamPlayers
   const getPlayerData = () => {
     if (gameData?.isUpcoming) {
@@ -239,20 +247,25 @@ export default function DashboardPage() {
         flashMomentum = opponentMomentum;
       }
       
-      // Boost momentum for better visual effect (minimum 0.3 for live games)
+      // Normalize momentum to 0-1 range and boost for better visual effect
+      // Ensure minimum 0.1 for live games to show some activity
       if (gameData.isLive) {
-        flashMomentum = Math.max(0.3, flashMomentum);
+        flashMomentum = Math.max(0.1, Math.min(1.0, flashMomentum));
+      } else {
+        flashMomentum = Math.max(0, Math.min(1.0, flashMomentum));
       }
       
       // Debug logging
       console.log('🔥 Momentum Flash Debug:', {
         selectedTeam: gameData.selectedTeam.name,
-        selectedMomentum: selectedMomentum.toFixed(2),
-        opponentMomentum: opponentMomentum.toFixed(2),
+        selectedMomentum: selectedMomentum.toFixed(3),
+        opponentTeam: gameData.opponentTeam.name,
+        opponentMomentum: opponentMomentum.toFixed(3),
         flashColor,
-        flashMomentum: flashMomentum.toFixed(2),
+        flashMomentum: flashMomentum.toFixed(3),
         isLive: gameData.isLive,
-        reduceFlashing
+        reduceFlashing,
+        teamColorValid: /^#[0-9A-F]{6}$/i.test(flashColor)
       });
       
       return {
@@ -262,7 +275,6 @@ export default function DashboardPage() {
     }
   };
 
-  const gameData = getTeamData();
   const playerData = getPlayerData();
   const flashData = getCurrentMomentum();
 
@@ -326,32 +338,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Team Selection - show when game is selected but no team selected */}
-            {selectedGameId && !selectedTeamId && (
-              <div className="p-4 bg-gray-800 border-b border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-3">Select Team to Analyze</h3>
-                <div className="flex gap-4 justify-center">
-                  {[...(liveTeams || []), ...(upcomingTeams || [])]
-                    .filter(team => team.gameId === selectedGameId)
-                    .map(team => (
-                      <button
-                        key={team.id}
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setView('team');
-                        }}
-                        className="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-lg transition-colors"
-                      >
-                        <div className="text-white font-medium">{team.name}</div>
-                        {team.isHome && (
-                          <div className="text-xs text-gray-400 mt-1">HOME</div>
-                        )}
-                      </button>
-                    ))}
-                </div>
-              </div>
-            )}
-
             <MainCanvas
               flashHex={flashData.hex}
               momentum={flashData.momentum}
@@ -364,6 +350,17 @@ export default function DashboardPage() {
                   <p className="text-gray-300 max-w-md mx-auto">
                     Select a game from the dropdown above to analyze team momentum and player performance in real-time.
                   </p>
+                </div>
+              ) : !selectedTeamId ? (
+                /* Game Selected but No Team Selected State */
+                <div className="space-y-4 text-center">
+                  <h2 className="text-3xl font-bold">Game Selected</h2>
+                  <p className="text-gray-300 max-w-md mx-auto">
+                    Choose a team to analyze from the sidebar to begin momentum tracking.
+                  </p>
+                  <div className="text-sm text-gray-400 mt-4">
+                    👉 Look for "Analysis Focus" in the right panel
+                  </div>
                 </div>
               ) : gameData?.isUpcoming ? (
                 /* Upcoming Game State */
@@ -415,61 +412,123 @@ export default function DashboardPage() {
             </MainCanvas>
           </div>
           
-          {/* Right Sidebar - Only show when game and team are selected */}
-          {gameData && selectedTeamId && (
+          {/* Right Sidebar - Show when game is selected */}
+          {selectedGameId && (
             <div className="w-80 bg-gray-800 border-l border-gray-700 flex flex-col">
               {/* Game Context */}
               <div className="p-4 border-b border-gray-700 bg-gray-750">
                 <div className="text-center mb-4">
-                  <h2 className="text-xl font-bold text-white">
-                    {gameData.selectedTeam.name} vs {gameData.opponentTeam.name}
-                  </h2>
-                  
-                  {gameData.isUpcoming ? (
-                    <div className="space-y-2 mt-2">
-                      <div className="text-lg font-semibold text-blue-400">
-                        Game Preview
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        Analytics available when game starts
-                      </div>
-                    </div>
-                  ) : (
+                  {selectedTeamId && gameData ? (
+                    /* Team selected - show full game context */
                     <>
-                      <div className="text-2xl font-bold text-gray-300 mt-2">
-                        {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
-                      </div>
-                      <div className="text-sm text-gray-400 mt-1">
-                        {gameData.quarter} • {gameData.gameTime}
-                        {gameData.isLive && (
-                          <span className="ml-2 inline-flex items-center space-x-1">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                            <span className="text-red-500 text-xs font-medium">LIVE</span>
-                          </span>
-                        )}
+                      <h2 className="text-xl font-bold text-white">
+                        {gameData.selectedTeam.name} vs {gameData.opponentTeam.name}
+                      </h2>
+                      
+                      {gameData.isUpcoming ? (
+                        <div className="space-y-2 mt-2">
+                          <div className="text-lg font-semibold text-blue-400">
+                            Game Preview
+                          </div>
+                          <div className="text-sm text-gray-400">
+                            Analytics available when game starts
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-2xl font-bold text-gray-300 mt-2">
+                            {gameData.selectedTeam.score} - {gameData.opponentTeam.score}
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">
+                            {gameData.quarter} • {gameData.gameTime}
+                            {gameData.isLive && (
+                              <span className="ml-2 inline-flex items-center space-x-1">
+                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                                <span className="text-red-500 text-xs font-medium">LIVE</span>
+                              </span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    /* No team selected - show basic game info */
+                    <>
+                      <h2 className="text-xl font-bold text-white">
+                        {(() => {
+                          const teams = [...(liveTeams || []), ...(upcomingTeams || [])].filter(t => t.gameId === selectedGameId);
+                          return teams.length >= 2 ? `${teams[0].name} vs ${teams[1].name}` : 'Game Selected';
+                        })()}
+                      </h2>
+                      <div className="text-sm text-gray-400 mt-2">
+                        Select a team below to begin analysis
                       </div>
                     </>
                   )}
                 </div>
 
-                {/* Team Selection Indicator */}
-                <div className="bg-gray-900/50 rounded-lg p-3">
-                  <div className="text-xs text-gray-400 mb-2">Analysis Focus:</div>
-                  <div className="flex items-center justify-center space-x-4">
-                    <div className="text-center">
-                      <div 
-                        className="w-8 h-8 rounded-full mx-auto mb-1 ring-2 ring-blue-500"
-                        style={{ backgroundColor: gameData.selectedTeam.color }}
-                      />
-                      <div className="text-xs text-white font-medium">{gameData.selectedTeam.name}</div>
-                      <div className="text-xs text-blue-400">Selected Team</div>
-                    </div>
+                {/* Analysis Focus - Team Selection */}
+                <div className="p-4 border-b border-gray-700">
+                  <div className="bg-gray-900/50 rounded-lg p-3">
+                    <div className="text-xs text-gray-400 mb-2">Analysis Focus:</div>
+                    
+                    {!selectedTeamId ? (
+                      /* No team selected - show selection options */
+                      <div className="space-y-3">
+                        <div className="text-sm text-white text-center mb-2">Select Team to Analyze:</div>
+                        <div className="space-y-2">
+                          {[...(liveTeams || []), ...(upcomingTeams || [])]
+                            .filter(team => team.gameId === selectedGameId)
+                            .map(team => (
+                              <button
+                                key={team.id}
+                                onClick={() => {
+                                  setSelectedTeamId(team.id);
+                                  setView('team');
+                                }}
+                                className="w-full px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-left"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="font-medium">{team.name}</div>
+                                  <div className="text-xs opacity-75">
+                                    {team.isHome ? 'HOME' : 'AWAY'}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    ) : (
+                      /* Team selected - show selected team with change option */
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-white">Selected Team:</div>
+                          <button
+                            onClick={() => setSelectedTeamId(null)}
+                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            Change
+                          </button>
+                        </div>
+                        
+                        <div className="flex items-center justify-center space-x-4">
+                          <div className="text-center">
+                            <div 
+                              className="w-8 h-8 rounded-full mx-auto mb-1 ring-2 ring-blue-500"
+                              style={{ backgroundColor: gameData?.selectedTeam.color }}
+                            />
+                            <div className="text-xs text-white font-medium">{gameData?.selectedTeam.name}</div>
+                            <div className="text-xs text-blue-400">Selected Team</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {!gameData.isUpcoming ? (
-                /* Live Game Content */
+              {/* Team Analysis Content - Only show when team is selected */}
+              {selectedTeamId && gameData && !gameData.isUpcoming ? (
                 <>
                   {/* Momentum Tracking */}
                   <div className="p-4 border-b border-gray-700">
@@ -537,8 +596,94 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </>
-              ) : (
-                /* Upcoming Game Content */
+              ) : null}
+
+              {/* Live Odds - Always show when game is selected */}
+              <div className="p-4 border-t border-gray-700">
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  {gameData?.isUpcoming ? 'Opening Odds' : 'Live Odds'}
+                </h3>
+                {isLoadingOdds ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                    <div className="text-xs text-gray-400">Loading odds...</div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Odds Quality Indicator */}
+                    <div className="text-xs text-center py-1 px-2 rounded bg-gray-800 border border-gray-600">
+                      {getOddsDataMessage(oddsData, gameData?.isUpcoming)}
+                    </div>
+
+                    {/* Spread */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Spread</span>
+                      <div className="text-right">
+                        <div className="text-white font-medium">
+                          {oddsData?.markets?.spread?.points !== undefined
+                            ? formatSpread(oddsData.markets.spread.points)
+                            : formatSpread(gameData?.odds?.spread || -2.5)
+                          }
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {oddsData?.markets?.spread?.home !== undefined
+                            ? `(${oddsData.markets.spread.home > 0 ? '+' : ''}${oddsData.markets.spread.home})`
+                            : '(-110)'
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Total</span>
+                      <div className="text-right">
+                        <div className="text-white font-medium">
+                          {formatTotal(
+                            oddsData?.markets?.total?.points || 
+                            gameData?.odds?.total || 
+                            218.5
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {oddsData?.markets?.total?.over !== undefined && oddsData?.markets?.total?.under !== undefined
+                            ? `(${oddsData.markets.total.over > 0 ? '+' : ''}${oddsData.markets.total.over}/${oddsData.markets.total.under > 0 ? '+' : ''}${oddsData.markets.total.under})`
+                            : '(-110/-110)'
+                          }
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Moneyline */}
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-300">Moneyline</span>
+                      <div className="text-right">
+                        <div className="text-white font-medium text-sm">
+                          {oddsData?.markets?.moneyline?.away !== undefined && oddsData?.markets?.moneyline?.home !== undefined
+                            ? formatMoneyline(oddsData.markets.moneyline.home, oddsData.markets.moneyline.away)
+                            : formatMoneyline(
+                                gameData?.odds?.moneyline?.home || -125,
+                                gameData?.odds?.moneyline?.away || +105
+                              )
+                          }
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Away / Home
+                        </div>
+                      </div>
+                    </div>
+
+                    {oddsData?.lastUpdate && (
+                      <div className="text-xs text-gray-500 mt-3 text-center border-t border-gray-700 pt-2">
+                        Updated: {oddsData.lastUpdate}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Game Countdown for Upcoming Games - Show when game is selected, not just team */}
+              {gameData?.isUpcoming && (
                 <div className="p-4 flex-1 flex items-center justify-center">
                   <GameCountdown 
                     gameStartTime={gameData.gameStartTime ?? null}
@@ -546,29 +691,6 @@ export default function DashboardPage() {
                   />
                 </div>
               )}
-
-              {/* Live Odds */}
-              <div className="p-4 border-t border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-3">
-                  {gameData.isUpcoming ? 'Opening Odds' : 'Live Odds'}
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-300">Spread</span>
-                    <span className="text-white">{gameData.odds.spread}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-300">Total</span>
-                    <span className="text-white">{gameData.odds.total}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-300">Moneyline</span>
-                    <span className="text-white text-xs">
-                      {gameData.odds.moneyline.away} / {gameData.odds.moneyline.home}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -579,6 +701,7 @@ export default function DashboardPage() {
             mode={view}
             selectedPlayer={selectedPlayer}
             teamInfo={gameData.teamInfo}
+            gameId={selectedGameId || undefined}
           />
         )}
       </div>

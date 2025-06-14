@@ -94,7 +94,7 @@ class NBAAnalyticsAPI {
 
   // Game Players
   async getGamePlayers(gameId: number, minMinutes = 15) {
-    return this.request(`/api/v1/players/game/${gameId}?min_minutes=${minMinutes}`);
+    return this.request(`/api/games/${gameId}/players?min_minutes=${minMinutes}`);
   }
 
   // Quarterly Prediction

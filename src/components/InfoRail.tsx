@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { formatSpread, formatTotal, formatAmericanOdds } from '@/lib/utils';
 
 interface Team {
   name: string;
@@ -124,24 +125,24 @@ export default function InfoRail({
           {odds.spread && (
             <div className="flex justify-between text-xs mb-1">
               <span className="text-gray-300">Spread</span>
-              <span className="text-white">{odds.spread > 0 ? '+' : ''}{odds.spread}</span>
+              <span className="text-white font-medium">{formatSpread(odds.spread)}</span>
             </div>
           )}
           
           {odds.total && (
             <div className="flex justify-between text-xs mb-1">
               <span className="text-gray-300">Total</span>
-              <span className="text-white">{odds.total}</span>
+              <span className="text-white font-medium">{formatTotal(odds.total)}</span>
             </div>
           )}
           
           {odds.moneyline && (
             <div className="flex justify-between text-xs">
               <span className="text-gray-300">ML</span>
-              <div className="text-white">
-                <span className="text-xs">{odds.moneyline.away > 0 ? '+' : ''}{odds.moneyline.away}</span>
+              <div className="text-white font-medium">
+                <span className="text-xs">{formatAmericanOdds(odds.moneyline.away)}</span>
                 <span className="text-gray-400 mx-1">/</span>
-                <span className="text-xs">{odds.moneyline.home > 0 ? '+' : ''}{odds.moneyline.home}</span>
+                <span className="text-xs">{formatAmericanOdds(odds.moneyline.home)}</span>
               </div>
             </div>
           )}
