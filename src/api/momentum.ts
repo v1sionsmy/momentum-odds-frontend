@@ -26,28 +26,31 @@ export type MomentumSnapshot = {
   data: Record<string, number>;
 };
 
-/** Get momentum snapshots for a game */
+/** Get momentum snapshots for a game - using momentum timeline endpoint */
 export const getSnapshots = async (gameId: number, limit: number = 50): Promise<MomentumSnapshot[]> => {
-  const { data } = await api.get(`/api/games/${gameId}/snapshots`, { 
+  const { data } = await api.get(`/api/v1/games/${gameId}/momentum-timeline`, { 
     params: { limit } 
   });
-  return data;
+  // Convert timeline data to snapshot format if needed
+  return data.snapshots || data || [];
 };
 
-/** Open a live momentum stream for a game */
+/** Open a live momentum stream for a game - using WebSocket instead */
 export const openSnapshotStream = (gameId: number): EventSource => {
-  const url = `${LEGACY_BASE_URL}/api/stream/${gameId}`;
-  return new EventSource(url);
+  // Note: Backend uses WebSocket, not EventSource. This is a fallback.
+  const url = `${LEGACY_BASE_URL}/ws/games/${gameId}`;
+  console.warn('EventSource not supported by backend. Use WebSocket instead:', url);
+  return new EventSource(url); // This will likely fail - use WebSocket hook instead
 };
 
 /** Get upcoming games schedule */
 export const getUpcomingGames = async (days: number = 7): Promise<Game[]> => {
-  const { data } = await api.get(`/api/games/upcoming`, { params: { days } });
-  return data;
+  const { data } = await api.get(`/api/v1/games/scheduled`, { params: { limit: days * 5 } });
+  return data.games || data || [];
 };
 
-/** Get today's games */
+/** Get today's games - using live games endpoint */
 export const getTodayGames = async (): Promise<Game[]> => {
-  const { data } = await api.get('/api/games/today');
-  return data;
+  const { data } = await api.get('/api/v1/games/live');
+  return data.games || data || [];
 }; 

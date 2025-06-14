@@ -23,7 +23,7 @@ interface WebSocketMessage {
 
 // WebSocket configuration
 const WS_CONFIG = {
-  development: 'wss://nba-analytics-api.onrender.com',
+  development: 'ws://localhost:8000',
   production: 'wss://nba-analytics-api.onrender.com'
 };
 
