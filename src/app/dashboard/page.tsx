@@ -611,7 +611,7 @@ export default function DashboardPage() {
                   <div className="space-y-3">
                     {/* Odds Quality Indicator */}
                     <div className="text-xs text-center py-1 px-2 rounded bg-gray-800 border border-gray-600">
-                      {getOddsDataMessage(oddsData, gameData?.isUpcoming)}
+                      {getOddsDataMessage(oddsData || {}, gameData?.isUpcoming)}
                     </div>
 
                     {/* Spread */}
