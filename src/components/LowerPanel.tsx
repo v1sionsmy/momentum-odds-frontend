@@ -106,18 +106,52 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                 <div className="text-xs text-gray-400 mb-2">
                   ETA: {selectedPlayer.pointsETA}
                 </div>
-                <div className="w-full h-2 bg-gray-600 rounded-full overflow-hidden">
+                
+                {/* Enhanced Progress Bar with Milestones */}
+                <div className="relative w-full h-3 bg-gray-600 rounded-full overflow-hidden mb-2">
+                  {/* Milestone markers */}
+                  <div className="absolute inset-0 flex">
+                    <div className="w-[40%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%]"></div>
+                  </div>
+                  
+                  {/* Progress fill */}
                   <div 
-                    className="h-full transition-all duration-500"
+                    className="h-full transition-all duration-500 relative z-10"
                     style={{ 
                       width: `${Math.min((selectedPlayer.points / selectedPlayer.pointsETA) * 100, 100)}%`,
-                      backgroundColor: selectedPlayer.points >= selectedPlayer.pointsETA ? '#10B981' : 
-                                     selectedPlayer.points >= selectedPlayer.pointsETA * 0.8 ? '#F59E0B' : '#EF4444'
+                      backgroundColor: (() => {
+                        const pct = (selectedPlayer.points / selectedPlayer.pointsETA) * 100;
+                        if (pct >= 100) return '#10B981'; // green - exceeded
+                        if (pct >= 80) return '#F59E0B'; // yellow - on pace
+                        if (pct >= 60) return '#3B82F6'; // blue - building
+                        if (pct >= 40) return '#8B5CF6'; // purple - early
+                        return '#EF4444'; // red - behind
+                      })()
                     }}
                   />
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {((selectedPlayer.points / selectedPlayer.pointsETA) * 100).toFixed(0)}% of projection
+                
+                {/* Milestone Status */}
+                <div className="text-xs text-gray-500 mb-1">
+                  {(() => {
+                    const pct = (selectedPlayer.points / selectedPlayer.pointsETA) * 100;
+                    if (pct >= 100) return `🎯 Exceeded projection (${pct.toFixed(0)}%)`;
+                    if (pct >= 80) return `🔥 On pace (${pct.toFixed(0)}%)`;
+                    if (pct >= 60) return `📈 Building momentum (${pct.toFixed(0)}%)`;
+                    if (pct >= 40) return `⏰ Early progress (${pct.toFixed(0)}%)`;
+                    return `🚨 Behind pace (${pct.toFixed(0)}%)`;
+                  })()}
+                </div>
+                
+                {/* Milestone Labels */}
+                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                  <span>40%</span>
+                  <span>60%</span>
+                  <span>80%</span>
+                  <span>100%</span>
                 </div>
               </div>
             </div>
@@ -132,18 +166,52 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                 <div className="text-xs text-gray-400 mb-2">
                   ETA: {selectedPlayer.reboundsETA}
                 </div>
-                <div className="w-full h-2 bg-gray-600 rounded-full overflow-hidden">
+                
+                {/* Enhanced Progress Bar with Milestones */}
+                <div className="relative w-full h-3 bg-gray-600 rounded-full overflow-hidden mb-2">
+                  {/* Milestone markers */}
+                  <div className="absolute inset-0 flex">
+                    <div className="w-[40%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%]"></div>
+                  </div>
+                  
+                  {/* Progress fill */}
                   <div 
-                    className="h-full transition-all duration-500"
+                    className="h-full transition-all duration-500 relative z-10"
                     style={{ 
                       width: `${Math.min((selectedPlayer.rebounds / selectedPlayer.reboundsETA) * 100, 100)}%`,
-                      backgroundColor: selectedPlayer.rebounds >= selectedPlayer.reboundsETA ? '#10B981' : 
-                                     selectedPlayer.rebounds >= selectedPlayer.reboundsETA * 0.8 ? '#F59E0B' : '#EF4444'
+                      backgroundColor: (() => {
+                        const pct = (selectedPlayer.rebounds / selectedPlayer.reboundsETA) * 100;
+                        if (pct >= 100) return '#10B981'; // green - exceeded
+                        if (pct >= 80) return '#F59E0B'; // yellow - on pace
+                        if (pct >= 60) return '#3B82F6'; // blue - building
+                        if (pct >= 40) return '#8B5CF6'; // purple - early
+                        return '#EF4444'; // red - behind
+                      })()
                     }}
                   />
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {((selectedPlayer.rebounds / selectedPlayer.reboundsETA) * 100).toFixed(0)}% of projection
+                
+                {/* Milestone Status */}
+                <div className="text-xs text-gray-500 mb-1">
+                  {(() => {
+                    const pct = (selectedPlayer.rebounds / selectedPlayer.reboundsETA) * 100;
+                    if (pct >= 100) return `🎯 Exceeded projection (${pct.toFixed(0)}%)`;
+                    if (pct >= 80) return `🔥 On pace (${pct.toFixed(0)}%)`;
+                    if (pct >= 60) return `📈 Building momentum (${pct.toFixed(0)}%)`;
+                    if (pct >= 40) return `⏰ Early progress (${pct.toFixed(0)}%)`;
+                    return `🚨 Behind pace (${pct.toFixed(0)}%)`;
+                  })()}
+                </div>
+                
+                {/* Milestone Labels */}
+                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                  <span>40%</span>
+                  <span>60%</span>
+                  <span>80%</span>
+                  <span>100%</span>
                 </div>
               </div>
             </div>
@@ -158,18 +226,52 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                 <div className="text-xs text-gray-400 mb-2">
                   ETA: {selectedPlayer.assistsETA}
                 </div>
-                <div className="w-full h-2 bg-gray-600 rounded-full overflow-hidden">
+                
+                {/* Enhanced Progress Bar with Milestones */}
+                <div className="relative w-full h-3 bg-gray-600 rounded-full overflow-hidden mb-2">
+                  {/* Milestone markers */}
+                  <div className="absolute inset-0 flex">
+                    <div className="w-[40%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%] border-r border-gray-500"></div>
+                    <div className="w-[20%]"></div>
+                  </div>
+                  
+                  {/* Progress fill */}
                   <div 
-                    className="h-full transition-all duration-500"
+                    className="h-full transition-all duration-500 relative z-10"
                     style={{ 
                       width: `${Math.min((selectedPlayer.assists / selectedPlayer.assistsETA) * 100, 100)}%`,
-                      backgroundColor: selectedPlayer.assists >= selectedPlayer.assistsETA ? '#10B981' : 
-                                     selectedPlayer.assists >= selectedPlayer.assistsETA * 0.8 ? '#F59E0B' : '#EF4444'
+                      backgroundColor: (() => {
+                        const pct = (selectedPlayer.assists / selectedPlayer.assistsETA) * 100;
+                        if (pct >= 100) return '#10B981'; // green - exceeded
+                        if (pct >= 80) return '#F59E0B'; // yellow - on pace
+                        if (pct >= 60) return '#3B82F6'; // blue - building
+                        if (pct >= 40) return '#8B5CF6'; // purple - early
+                        return '#EF4444'; // red - behind
+                      })()
                     }}
                   />
                 </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {((selectedPlayer.assists / selectedPlayer.assistsETA) * 100).toFixed(0)}% of projection
+                
+                {/* Milestone Status */}
+                <div className="text-xs text-gray-500 mb-1">
+                  {(() => {
+                    const pct = (selectedPlayer.assists / selectedPlayer.assistsETA) * 100;
+                    if (pct >= 100) return `🎯 Exceeded projection (${pct.toFixed(0)}%)`;
+                    if (pct >= 80) return `🔥 On pace (${pct.toFixed(0)}%)`;
+                    if (pct >= 60) return `📈 Building momentum (${pct.toFixed(0)}%)`;
+                    if (pct >= 40) return `⏰ Early progress (${pct.toFixed(0)}%)`;
+                    return `🚨 Behind pace (${pct.toFixed(0)}%)`;
+                  })()}
+                </div>
+                
+                {/* Milestone Labels */}
+                <div className="flex justify-between text-xs text-gray-600 mt-1">
+                  <span>40%</span>
+                  <span>60%</span>
+                  <span>80%</span>
+                  <span>100%</span>
                 </div>
               </div>
             </div>

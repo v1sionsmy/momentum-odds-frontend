@@ -28,6 +28,10 @@ interface PlayerData {
   minutes: number;
   team: string;
   mlPrediction?: MLPrediction;
+  // Final predictions for reference
+  finalPointsPrediction?: number;
+  finalReboundsPrediction?: number;
+  finalAssistsPrediction?: number;
 }
 
 interface MLPrediction {
@@ -317,23 +321,53 @@ export default function DashboardPage() {
         const mlPrediction = playerPredictions[player.player_id];
         
         // Use ML predictions if available, otherwise fallback to enhanced statistical projection
-        let pointsETA, reboundsETA, assistsETA;
+        let finalPointsPrediction, finalReboundsPrediction, finalAssistsPrediction;
         
         if (mlPrediction) {
-          pointsETA = Math.round(mlPrediction.points * 10) / 10; // Round to 1 decimal
-          reboundsETA = Math.round(mlPrediction.rebounds * 10) / 10;
-          assistsETA = Math.round(mlPrediction.assists * 10) / 10;
-          console.log(`🤖 Using ML prediction for ${player.name}: ${pointsETA}pts, ${reboundsETA}reb, ${assistsETA}ast (${mlPrediction.modelType})`);
+          finalPointsPrediction = Math.round(mlPrediction.points * 10) / 10;
+          finalReboundsPrediction = Math.round(mlPrediction.rebounds * 10) / 10;
+          finalAssistsPrediction = Math.round(mlPrediction.assists * 10) / 10;
+          console.log(`🤖 Using ML prediction for ${player.name}: ${finalPointsPrediction}pts, ${finalReboundsPrediction}reb, ${finalAssistsPrediction}ast (${mlPrediction.modelType})`);
         } else {
           // Enhanced statistical fallback (better than simple multiplication)
           const gameProgressFactor = minutes > 0 ? Math.min(2.0, 48 / minutes) : 2.0;
           const momentumBoost = 1.0 + (momentum - 0.5) * 0.2; // ±10% based on momentum
           
-          pointsETA = Math.round((points * gameProgressFactor * momentumBoost) * 10) / 10;
-          reboundsETA = Math.round((rebounds * gameProgressFactor * momentumBoost * 0.9) * 10) / 10;
-          assistsETA = Math.round((assists * gameProgressFactor * momentumBoost * 1.1) * 10) / 10;
-          console.log(`📊 Using enhanced statistical projection for ${player.name}: ${pointsETA}pts, ${reboundsETA}reb, ${assistsETA}ast`);
+          finalPointsPrediction = Math.round((points * gameProgressFactor * momentumBoost) * 10) / 10;
+          finalReboundsPrediction = Math.round((rebounds * gameProgressFactor * momentumBoost * 0.9) * 10) / 10;
+          finalAssistsPrediction = Math.round((assists * gameProgressFactor * momentumBoost * 1.1) * 10) / 10;
+          console.log(`📊 Using enhanced statistical projection for ${player.name}: ${finalPointsPrediction}pts, ${finalReboundsPrediction}reb, ${finalAssistsPrediction}ast`);
         }
+        
+        // Calculate percentage-based predictions (40%, 60%, 80% milestones)
+        const calculatePercentageBasedETA = (currentStat: number, finalPrediction: number) => {
+          if (finalPrediction <= 0) return currentStat;
+          
+          const currentPercentage = (currentStat / finalPrediction) * 100;
+          
+          // If player is under 40% of prediction, show 40% milestone
+          if (currentPercentage < 40) {
+            return Math.round((finalPrediction * 0.4) * 10) / 10;
+          }
+          // If player is between 40-60%, show 60% milestone
+          else if (currentPercentage < 60) {
+            return Math.round((finalPrediction * 0.6) * 10) / 10;
+          }
+          // If player is between 60-80%, show 80% milestone
+          else if (currentPercentage < 80) {
+            return Math.round((finalPrediction * 0.8) * 10) / 10;
+          }
+          // If player is over 80%, show final prediction
+          else {
+            return finalPrediction;
+          }
+        };
+        
+        const pointsETA = calculatePercentageBasedETA(points, finalPointsPrediction);
+        const reboundsETA = calculatePercentageBasedETA(rebounds, finalReboundsPrediction);
+        const assistsETA = calculatePercentageBasedETA(assists, finalAssistsPrediction);
+        
+        console.log(`📈 Percentage-based ETA for ${player.name}: ${pointsETA}pts (${((points/finalPointsPrediction)*100).toFixed(0)}% of ${finalPointsPrediction}), ${reboundsETA}reb, ${assistsETA}ast`);
         
         return {
           playerId: player.player_id,
@@ -349,7 +383,11 @@ export default function DashboardPage() {
           position: player.position || 'G',
           minutes: minutes,
           team: player.team_name || 'Unknown',
-          mlPrediction: mlPrediction // Include ML prediction info for debugging
+          mlPrediction: mlPrediction, // Include ML prediction info for debugging
+          // Add final predictions for reference
+          finalPointsPrediction: finalPointsPrediction,
+          finalReboundsPrediction: finalReboundsPrediction,
+          finalAssistsPrediction: finalAssistsPrediction
         };
       });
     }

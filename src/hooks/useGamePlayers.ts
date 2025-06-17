@@ -18,6 +18,7 @@ interface Player {
   momentum?: number;
 }
 
+// REMOVE MOCK DATA - only show real player data to prevent confusion
 // Real NBA player names for realistic fallback data
 const REAL_NBA_PLAYERS = [
   { name: "Shai Gilgeous-Alexander", position: "PG", team: "OKC" },
@@ -39,46 +40,51 @@ const REAL_NBA_PLAYERS = [
 ];
 
 function generateRealisticPlayerData(gameId: number, teamName?: string): Player[] {
-  // Use gameId to ensure consistent data for the same game
-  const seed = gameId || 1;
+  // DISABLE MOCK DATA - return empty array to avoid confusion
+  console.log(`🎭 Mock player data generation disabled for game ${gameId} to prevent displaying fake momentum`);
+  return [];
   
-  return REAL_NBA_PLAYERS.slice(0, 10).map((playerTemplate, index) => {
-    // Generate consistent but varied stats based on player index and game ID
-    const statSeed = (seed + index) % 100;
-    const isStarter = index < 5;
-    
-    // More realistic stat ranges
-    const basePoints = isStarter ? 
-      Math.floor((statSeed % 20) + 12) : 
-      Math.floor((statSeed % 15) + 4);
-    
-    const baseRebounds = isStarter ? 
-      Math.floor((statSeed % 8) + 3) : 
-      Math.floor((statSeed % 5) + 1);
-    
-    const baseAssists = isStarter ? 
-      Math.floor((statSeed % 7) + 2) : 
-      Math.floor((statSeed % 4) + 1);
-    
-    const minutes = isStarter ? 
-      Math.floor((statSeed % 15) + 28) : 
-      Math.floor((statSeed % 20) + 12);
-    
-    return {
-      player_id: 1000 + index,
-      full_name: playerTemplate.name,
-      name: playerTemplate.name,
-      position: playerTemplate.position,
-      points: basePoints,
-      rebounds: baseRebounds,
-      assists: baseAssists,
-      minutes_played: minutes,
-      team_name: teamName || playerTemplate.team,
-      team_abbr: playerTemplate.team,
-      field_goal_percentage: Math.floor((statSeed % 40) + 35), // 35-75%
-      plus_minus: Math.floor((statSeed % 30) - 15) // -15 to +15
-    };
-  });
+  // OLD CODE - commented out to prevent confusion
+  // Use gameId to ensure consistent data for the same game
+  // const seed = gameId || 1;
+  // 
+  // return REAL_NBA_PLAYERS.slice(0, 10).map((playerTemplate, index) => {
+  //   // Generate consistent but varied stats based on player index and game ID
+  //   const statSeed = (seed + index) % 100;
+  //   const isStarter = index < 5;
+  //   
+  //   // More realistic stat ranges
+  //   const basePoints = isStarter ? 
+  //     Math.floor((statSeed % 20) + 12) : 
+  //     Math.floor((statSeed % 15) + 4);
+  //   
+  //   const baseRebounds = isStarter ? 
+  //     Math.floor((statSeed % 8) + 3) : 
+  //     Math.floor((statSeed % 5) + 1);
+  //   
+  //   const baseAssists = isStarter ? 
+  //     Math.floor((statSeed % 7) + 2) : 
+  //     Math.floor((statSeed % 4) + 1);
+  //   
+  //   const minutes = isStarter ? 
+  //     Math.floor((statSeed % 15) + 28) : 
+  //     Math.floor((statSeed % 20) + 12);
+  //   
+  //   return {
+  //     player_id: 1000 + index,
+  //     full_name: playerTemplate.name,
+  //     name: playerTemplate.name,
+  //     position: playerTemplate.position,
+  //     points: basePoints,
+  //     rebounds: baseRebounds,
+  //     assists: baseAssists,
+  //     minutes_played: minutes,
+  //     team_name: teamName || playerTemplate.team,
+  //     team_abbr: playerTemplate.team,
+  //     field_goal_percentage: Math.floor((statSeed % 40) + 35), // 35-75%
+  //     plus_minus: Math.floor((statSeed % 30) - 15) // -15 to +15
+  //   };
+  // });
 }
 
 export function useGamePlayers(gameId: number | null, minMinutes = 15) {
@@ -111,20 +117,18 @@ export function useGamePlayers(gameId: number | null, minMinutes = 15) {
               setGamePlayers(data.players);
               console.log(`✅ Using ${data.players.length} real players from ${data.source}`);
             } else {
-              // No real data available, use realistic fake data
-              console.log(`🎭 No real player data available, generating realistic fake data for game ${gameId}`);
-              const fakeData = generateRealisticPlayerData(gameId);
-              setGamePlayers(fakeData);
+              // No real data available - DON'T show fake data to prevent confusion
+              console.log(`❌ No real player data available for game ${gameId}, showing empty list instead of fake data`);
+              setGamePlayers([]);
             }
           } else if (Array.isArray(data) && data.length > 0) {
             // Old API format (direct array) - shouldn't happen with new endpoint
             console.log(`🏀 Old API format - ${data.length} players found`);
             setGamePlayers(data);
           } else {
-            // No data or empty response
-            console.log(`🎭 No player data in response, generating realistic fake data for game ${gameId}`);
-            const fakeData = generateRealisticPlayerData(gameId);
-            setGamePlayers(fakeData);
+            // No data or empty response - show empty list
+            console.log(`❌ No player data in response for game ${gameId}, showing empty list`);
+            setGamePlayers([]);
           }
         }
       } catch (e) {
@@ -132,10 +136,9 @@ export function useGamePlayers(gameId: number | null, minMinutes = 15) {
         if (!cancelled) {
           setError(e instanceof Error ? e : new Error('Failed to fetch players'));
           
-          // Even on error, provide realistic fake data
-          console.log(`🎭 API error, generating realistic fake data for game ${gameId}`);
-          const fakeData = generateRealisticPlayerData(gameId);
-          setGamePlayers(fakeData);
+          // Even on error, show empty list instead of fake data
+          console.log(`❌ API error for game ${gameId}, showing empty list instead of fake data`);
+          setGamePlayers([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -184,52 +187,40 @@ export function useTeamPlayers(gameId: number | null, teamName: string | null, m
               allPlayers = data.players;
               console.log(`✅ Using ${data.players.length} real players from ${data.source}`);
             } else {
-              // Generate realistic fake data
-              console.log(`🎭 No real team player data, generating realistic fake data for game ${gameId}`);
-              allPlayers = generateRealisticPlayerData(gameId, teamName || undefined);
+              // No real data - don't generate fake data
+              console.log(`❌ No real team player data for game ${gameId}, showing empty list`);
+              allPlayers = [];
             }
           } else if (Array.isArray(data) && data.length > 0) {
             // Old API format - shouldn't happen with new endpoint
             allPlayers = data;
             console.log(`🏀 Team players - Old API format - ${data.length} players found`);
           } else {
-            // No data, generate fake
-            console.log(`🎭 No team player data in response, generating realistic fake data for game ${gameId}`);
-            allPlayers = generateRealisticPlayerData(gameId, teamName || undefined);
+            // No data, show empty list
+            console.log(`❌ No team player data in response for game ${gameId}, showing empty list`);
+            allPlayers = [];
           }
           
-          // Filter by team name if specified
+          // Filter by team if specified and we have real data
+          let filteredPlayers = allPlayers;
           if (teamName && allPlayers.length > 0) {
-            const filteredPlayers = allPlayers.filter((player: Player) => 
-              player.team_name === teamName || 
-              player.team_abbr === teamName ||
-              player.team_name?.toLowerCase().includes(teamName.toLowerCase())
+            filteredPlayers = allPlayers.filter(player => 
+              player.team_name?.toLowerCase().includes(teamName.toLowerCase()) ||
+              player.team_abbr?.toLowerCase().includes(teamName.toLowerCase())
             );
-            
-            if (filteredPlayers.length > 0) {
-              setTeamPlayers(filteredPlayers);
-              console.log(`🎯 Filtered to ${filteredPlayers.length} players for team ${teamName}`);
-            } else {
-              // If no players match the team filter, take first half of all players
-              const halfPlayers = allPlayers.slice(0, Math.ceil(allPlayers.length / 2));
-              setTeamPlayers(halfPlayers);
-              console.log(`🎯 No team match, using first ${halfPlayers.length} players as team players`);
-            }
-          } else {
-            // No team filter, return all players
-            setTeamPlayers(allPlayers);
-            console.log(`🎯 No team filter, returning all ${allPlayers.length} players`);
+            console.log(`🎯 Filtered to ${filteredPlayers.length} players for team "${teamName}"`);
           }
+          
+          setTeamPlayers(filteredPlayers);
         }
       } catch (e) {
         console.error(`❌ Error fetching team players for game ${gameId}:`, e);
         if (!cancelled) {
           setError(e instanceof Error ? e : new Error('Failed to fetch team players'));
           
-          // Even on error, provide realistic fake data
-          console.log(`🎭 Team players API error, generating realistic fake data for game ${gameId}`);
-          const fakeData = generateRealisticPlayerData(gameId, teamName || undefined);
-          setTeamPlayers(fakeData.slice(0, 8)); // Limit to 8 players for team view
+          // On error, show empty list instead of fake data
+          console.log(`❌ API error for team players in game ${gameId}, showing empty list`);
+          setTeamPlayers([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
