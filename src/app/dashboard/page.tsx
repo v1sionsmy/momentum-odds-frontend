@@ -458,7 +458,8 @@ export default function DashboardPage() {
       playerId: player.playerId,
       name: player.name,
       color: player.color,
-      momentum: player.momentum
+      momentum: player.momentum,
+      hasMlPrediction: !!player.mlPrediction
     }));
   };
 
@@ -474,7 +475,11 @@ export default function DashboardPage() {
       reboundsETA: player.reboundsETA,
       assists: player.assists,
       assistsETA: player.assistsETA,
-      color: player.color
+      color: player.color,
+      mlPrediction: player.mlPrediction,
+      finalPointsPrediction: player.finalPointsPrediction,
+      finalReboundsPrediction: player.finalReboundsPrediction,
+      finalAssistsPrediction: player.finalAssistsPrediction
     };
   };
 

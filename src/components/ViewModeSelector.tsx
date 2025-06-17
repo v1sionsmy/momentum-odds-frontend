@@ -5,6 +5,7 @@ interface Player {
   name: string;
   color: string;
   momentum: number;
+  hasMlPrediction?: boolean;
 }
 
 interface ViewModeSelectorProps {
@@ -80,7 +81,12 @@ export default function ViewModeSelector({
                     : undefined
                 }}
               >
-                <div className="font-medium">{player.name}</div>
+                <div className="font-medium flex items-center justify-between">
+                  <span>{player.name}</span>
+                  {player.hasMlPrediction && (
+                    <span className="text-xs bg-green-500 text-white px-1.5 py-0.5 rounded ml-2">🤖 AI</span>
+                  )}
+                </div>
                 <div className="text-xs opacity-75">
                   {(player.momentum * 100).toFixed(0)}% momentum
                 </div>

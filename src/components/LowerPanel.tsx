@@ -12,6 +12,16 @@ interface PlayerStats {
   assists: number;
   assistsETA: number;
   color?: string;
+  mlPrediction?: {
+    points: number;
+    rebounds: number;
+    assists: number;
+    confidence: number;
+    modelType: string;
+  };
+  finalPointsPrediction?: number;
+  finalReboundsPrediction?: number;
+  finalAssistsPrediction?: number;
 }
 
 interface TeamInfo {
@@ -104,7 +114,19 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                   {selectedPlayer.points}
                 </div>
                 <div className="text-xs text-gray-400 mb-2">
-                  ETA: {selectedPlayer.pointsETA}
+                  {selectedPlayer.mlPrediction ? (
+                    <div className="space-y-1">
+                      <div>🤖 ML Prediction: {selectedPlayer.finalPointsPrediction || selectedPlayer.pointsETA}</div>
+                      <div className="text-green-400">
+                        {selectedPlayer.mlPrediction.modelType} 
+                        {selectedPlayer.mlPrediction.confidence && 
+                          ` (${(selectedPlayer.mlPrediction.confidence * 100).toFixed(0)}% confidence)`
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div>📊 Statistical Projection: {selectedPlayer.pointsETA}</div>
+                  )}
                 </div>
                 
                 {/* Enhanced Progress Bar with Milestones */}
@@ -164,7 +186,19 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                   {selectedPlayer.rebounds}
                 </div>
                 <div className="text-xs text-gray-400 mb-2">
-                  ETA: {selectedPlayer.reboundsETA}
+                  {selectedPlayer.mlPrediction ? (
+                    <div className="space-y-1">
+                      <div>🤖 ML Prediction: {selectedPlayer.finalReboundsPrediction || selectedPlayer.reboundsETA}</div>
+                      <div className="text-green-400">
+                        {selectedPlayer.mlPrediction.modelType}
+                        {selectedPlayer.mlPrediction.confidence && 
+                          ` (${(selectedPlayer.mlPrediction.confidence * 100).toFixed(0)}% confidence)`
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div>📊 Statistical Projection: {selectedPlayer.reboundsETA}</div>
+                  )}
                 </div>
                 
                 {/* Enhanced Progress Bar with Milestones */}
@@ -224,7 +258,19 @@ export default function LowerPanel({ mode, selectedPlayer, teamInfo, gameId, cla
                   {selectedPlayer.assists}
                 </div>
                 <div className="text-xs text-gray-400 mb-2">
-                  ETA: {selectedPlayer.assistsETA}
+                  {selectedPlayer.mlPrediction ? (
+                    <div className="space-y-1">
+                      <div>🤖 ML Prediction: {selectedPlayer.finalAssistsPrediction || selectedPlayer.assistsETA}</div>
+                      <div className="text-green-400">
+                        {selectedPlayer.mlPrediction.modelType}
+                        {selectedPlayer.mlPrediction.confidence && 
+                          ` (${(selectedPlayer.mlPrediction.confidence * 100).toFixed(0)}% confidence)`
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div>📊 Statistical Projection: {selectedPlayer.assistsETA}</div>
+                  )}
                 </div>
                 
                 {/* Enhanced Progress Bar with Milestones */}
